@@ -20,9 +20,6 @@ import java.util.HashSet;
  */
 public class PhotosContentProvider extends ContentProvider {
 
-    private static long startTime;
-    private static long endTime;
-
     // database
     private DatabaseHandler database;
 

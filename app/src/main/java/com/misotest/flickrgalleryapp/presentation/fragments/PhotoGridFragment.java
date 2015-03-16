@@ -60,7 +60,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
         mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mPhotoListPresenter = new PhotosListPresenter(this);
-        mPhotoListPresenter.setQuery("girls");
+        mPhotoListPresenter.setQuery("pussy");
         mPhotoListPresenter.startPresenting();
     }
 

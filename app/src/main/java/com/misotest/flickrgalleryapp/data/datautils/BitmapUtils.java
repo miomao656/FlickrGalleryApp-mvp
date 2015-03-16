@@ -32,7 +32,7 @@ public class BitmapUtils {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 try {
-                    subscriber.onNext(DownloadFromUrl(downUrl, FileUtils.getFileNameFromUrl(downUrl)));
+                    subscriber.onNext(downloadFileFromUrl(downUrl, FileUtils.getFileNameFromUrl(downUrl)));
                     subscriber.onCompleted();
                 } catch (Exception e) {
                     subscriber.onError(e);
@@ -48,7 +48,7 @@ public class BitmapUtils {
      * @param fileName
      * @return
      */
-    public static String DownloadFromUrl(String downloadUrl, String fileName) {
+    public static String downloadFileFromUrl(String downloadUrl, String fileName) {
         try {
             URL url = new URL(downloadUrl); //you can write here any link
            /* Open a connection to that URL. */
@@ -76,6 +76,9 @@ public class BitmapUtils {
                 fos.close();
                 return image.getPath();
             }
+            bis.close();
+            baf.clear();
+            is.close();
         } catch (IOException e) {
             Log.d("DownloadManager", "Error: " + e);
         }
