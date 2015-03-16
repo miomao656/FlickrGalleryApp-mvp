@@ -14,6 +14,10 @@ import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/**
+ * PhotoUri content provider class for interacting with photos database
+ * CRUD-e operations
+ */
 public class PhotosContentProvider extends ContentProvider {
 
     private static long startTime;
@@ -42,10 +46,7 @@ public class PhotosContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", DATA_ID);
     }
 
-    public static final String[] PROJECTION = {PhotosTable.KEY_ITEM_ID,
-            PhotosTable.KEY_PHOTO_DESCRIPTION, PhotosTable.KEY_FILE_URI_SMALL,
-            PhotosTable.KEY_FILE_URI_LARGE, PhotosTable.KEY_PHOTO_URL_SMALL,
-            PhotosTable.KEY_PHOTO_URL_LARGE};
+    public static final String[] PROJECTION = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_FILE_URI};
 
     @Override
     public boolean onCreate() {
@@ -60,7 +61,7 @@ public class PhotosContentProvider extends ContentProvider {
         // Check if the caller has requested a column which does not exists
         checkColumns(projection);
         // Set the table
-        queryBuilder.setTables(PhotosTable.TABLE_NAME);
+        queryBuilder.setTables(PhotoFilesTable.TABLE_NAME);
 
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
@@ -68,7 +69,7 @@ public class PhotosContentProvider extends ContentProvider {
                 break;
             case DATA_ID:
                 // Adding the ID to the original query
-                queryBuilder.appendWhere(PhotosTable.KEY_ITEM_ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(PhotoFilesTable.KEY_ITEM_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -94,7 +95,7 @@ public class PhotosContentProvider extends ContentProvider {
         long id = 0;
         switch (uriType) {
             case DATA:
-                id = sqlDB.insert(PhotosTable.TABLE_NAME, null, values);
+                id = sqlDB.insert(PhotoFilesTable.TABLE_NAME, null, values);
                 getContext().getContentResolver().notifyChange(uri, null);
                 break;
             default:
@@ -158,7 +159,7 @@ public class PhotosContentProvider extends ContentProvider {
 //        return numInserted;
 //    }
 
-    public int bulkInsert(Uri uri, ContentValues[] values){
+    public int bulkInsert(Uri uri, ContentValues[] values) {
         int numInserted = 0;
         String table = null;
 
@@ -166,7 +167,7 @@ public class PhotosContentProvider extends ContentProvider {
 
         switch (uriType) {
             case DATA:
-                table = PhotosTable.TABLE_NAME;
+                table = PhotoFilesTable.TABLE_NAME;
                 break;
         }
         SQLiteDatabase sqlDB = database.getWritableDatabase();
@@ -194,14 +195,14 @@ public class PhotosContentProvider extends ContentProvider {
         int rowsDeleted;
         switch (uriType) {
             case DATA:
-                rowsDeleted = sqlDB.delete(PhotosTable.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, selection, selectionArgs);
                 break;
             case DATA_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(PhotosTable.TABLE_NAME, PhotosTable.KEY_ITEM_ID + "=" + id, null);
+                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_ITEM_ID + "=" + id, null);
                 } else {
-                    rowsDeleted = sqlDB.delete(PhotosTable.TABLE_NAME, PhotosTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
+                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
                 }
                 break;
             default:
@@ -218,14 +219,14 @@ public class PhotosContentProvider extends ContentProvider {
         int rowsUpdated;
         switch (uriType) {
             case DATA:
-                rowsUpdated = sqlDB.update(PhotosTable.TABLE_NAME, values, selection, selectionArgs);
+                rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
             case DATA_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(PhotosTable.TABLE_NAME, values, PhotosTable.KEY_ITEM_ID + "=" + id, null);
+                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_ITEM_ID + "=" + id, null);
                 } else {
-                    rowsUpdated = sqlDB.update(PhotosTable.TABLE_NAME, values, PhotosTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
+                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
                 }
                 break;
             default:
@@ -236,10 +237,7 @@ public class PhotosContentProvider extends ContentProvider {
     }
 
     private void checkColumns(String[] projection) {
-        String[] available = {PhotosTable.KEY_ITEM_ID, PhotosTable.KEY_PHOTO_ID,
-                PhotosTable.KEY_PHOTO_DESCRIPTION, PhotosTable.KEY_FILE_URI_SMALL,
-                PhotosTable.KEY_FILE_URI_LARGE, PhotosTable.KEY_PHOTO_URL_SMALL,
-                PhotosTable.KEY_PHOTO_URL_LARGE};
+        String[] available = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_FILE_URI};
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

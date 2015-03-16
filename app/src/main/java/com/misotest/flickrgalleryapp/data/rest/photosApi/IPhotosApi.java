@@ -8,6 +8,10 @@ import retrofit.http.GET;
 import retrofit.http.Query;
 import rx.Observable;
 
+/**
+ * Retrofit interface with declared methods for interacting with flickr api
+ *
+ */
 public interface IPhotosApi {
 
     @GET("/?method=flickr.photos.search")

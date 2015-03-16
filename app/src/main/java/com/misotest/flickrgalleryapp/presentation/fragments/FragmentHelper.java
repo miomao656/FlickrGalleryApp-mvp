@@ -8,7 +8,8 @@ import android.app.FragmentTransaction;
 import timber.log.Timber;
 
 /**
- * Created by miomao on 5/18/14.
+ * Fragment operations
+ *
  */
 public class FragmentHelper {
 

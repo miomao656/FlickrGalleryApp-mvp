@@ -7,8 +7,10 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
+import com.misotest.flickrgalleryapp.presentation.DepthPageTransformer;
 import com.misotest.flickrgalleryapp.presentation.adapters.PhotosSlideAdapter;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import java.util.ArrayList;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class PhotoPagerFragment extends Fragment {
+public class PhotoPagerFragment extends Fragment implements View.OnClickListener {
 
     private static final String POSITION = "position";
     private static final String URL_LIST = "param2";
@@ -24,6 +26,8 @@ public class PhotoPagerFragment extends Fragment {
 
     @InjectView(R.id.pager)
     ViewPager mPager;
+    @InjectView(R.id.toolbar)
+    RelativeLayout mToolbar;
 
     private int position;
     private ArrayList<String> urlList;
@@ -55,10 +59,11 @@ public class PhotoPagerFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (urlList!=null && !urlList.isEmpty()) {
+        if (urlList != null && !urlList.isEmpty()) {
             mPhotosSlideAdapter = new PhotosSlideAdapter();
             mPhotosSlideAdapter.addUrls(urlList);
             mPager.setAdapter(mPhotosSlideAdapter);
+            mPager.setPageTransformer(false, new DepthPageTransformer());
             mPager.setCurrentItem(position);
         }
     }
@@ -67,6 +72,8 @@ public class PhotoPagerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
+        rootView.findViewById(R.id.img_back).setOnClickListener(this);
+        rootView.findViewById(R.id.back_text).setOnClickListener(this);
         ButterKnife.inject(this, rootView);
         return rootView;
     }
@@ -75,5 +82,15 @@ public class PhotoPagerFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.reset(this);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.img_back:
+            case R.id.back_text:
+                getActivity().onBackPressed();
+                break;
+        }
     }
 }

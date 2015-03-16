@@ -27,7 +27,8 @@ import butterknife.InjectView;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PhotoGridFragment extends Fragment implements PhotoGridView, PhotosGridAdapter.GridActions {
+public class PhotoGridFragment extends Fragment implements PhotoGridView,
+        PhotosGridAdapter.GridActions {
 
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
@@ -59,7 +60,8 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
         mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mPhotoListPresenter = new PhotosListPresenter(this);
-        mPhotoListPresenter.start();
+        mPhotoListPresenter.setQuery("girls");
+        mPhotoListPresenter.startPresenting();
     }
 
     @Override
@@ -82,7 +84,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void onLongPhotoClick(int position, String url) {
-
+        Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
     }
 
     @Override

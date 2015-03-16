@@ -6,7 +6,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
-import com.misotest.flickrgalleryapp.data.database.PhotosTable;
+import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
@@ -22,24 +22,25 @@ public class PhotosListPresenter extends Presenter {
 
     private final PhotoGridView photoGridView;
     GetPhotosUseCaseImpl useCase;
+    private String query;
 
     public PhotosListPresenter(PhotoGridView photoGridView) {
         this.photoGridView = photoGridView;
     }
 
-    public void onImagesSaved(List<String> urls) {
-        Observable.from(urls)
+    public void onImagesSaved(List<String> uriList) {
+        Observable.from(uriList)
                 .flatMap(new Func1<String, Observable<String>>() {
                     @Override
-                    public Observable<String> call(String s) {
-                        return Observable.just(s);
+                    public Observable<String> call(String uri) {
+                        return Observable.just(uri);
                     }
                 })
                 .map(new Func1<String, ContentValues>() {
                     @Override
-                    public ContentValues call(String s) {
+                    public ContentValues call(String uri) {
                         ContentValues values = new ContentValues();
-                        values.put(PhotosTable.KEY_FILE_URI_LARGE, s);
+                        values.put(PhotoFilesTable.KEY_FILE_URI, uri);
                         return values;
                     }
                 })
@@ -63,15 +64,15 @@ public class PhotosListPresenter extends Presenter {
                         new Action0() {
                             @Override
                             public void call() {
-                                List<String> urls = getUrisFromDb();
-                                photoGridView.showItemsFromDiskUrl(urls);
+                                List<String> uriList = getUriListFromDb();
+                                photoGridView.showItemsFromDiskUrl(uriList);
                                 photoGridView.hideLoading();
                             }
                         }
                 );
     }
 
-    private List<String> getUrisFromDb() {
+    private List<String> getUriListFromDb() {
         List<String> urls = new ArrayList<String>();
         ContentResolver resolver = photoGridView.getContext().getContentResolver();
         String[] projection = PhotosContentProvider.PROJECTION;
@@ -85,7 +86,7 @@ public class PhotosListPresenter extends Presenter {
             if (cursor.moveToFirst()) {
                 urls = new ArrayList<String>(cursor.getCount());
                 do {
-                    urls.add(cursor.getString(3));
+                    urls.add(cursor.getString(1));
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -93,14 +94,18 @@ public class PhotosListPresenter extends Presenter {
         return urls;
     }
 
+    public void setQuery(String query){
+        this.query = query;
+    }
+
     @Override
-    public void start() {
+    public void startPresenting() {
         photoGridView.showLoading();
-        if (getUrisFromDb().isEmpty()) {
+        if (getUriListFromDb().isEmpty()) {
             useCase = new GetPhotosUseCaseImpl(this);
-            useCase.getPhotos(0, "akita");
+            useCase.getPhotos(0, query);
         } else {
-            photoGridView.showItemsFromDiskUrl(getUrisFromDb());
+            photoGridView.showItemsFromDiskUrl(getUriListFromDb());
             photoGridView.hideLoading();
         }
     }
@@ -113,6 +118,6 @@ public class PhotosListPresenter extends Presenter {
     }
 
     public void getPage(int page) {
-        useCase.getPhotos(page, "akita");
+        useCase.getPhotos(page, query);
     }
 }
