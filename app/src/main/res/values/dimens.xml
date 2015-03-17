@@ -3,4 +3,5 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="cardview_layout_width">100dp</dimen>
+    <dimen name="insets">1dp</dimen>
 </resources>

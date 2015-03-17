@@ -5,8 +5,10 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
+import com.misotest.flickrgalleryapp.MainApplication;
 import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
+import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
+import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
@@ -14,62 +16,66 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.subscriptions.CompositeSubscription;
 
 public class PhotosListPresenter extends Presenter {
 
     private final PhotoGridView photoGridView;
     GetPhotosUseCaseImpl useCase;
     private String query;
+    private CompositeSubscription subscription = new CompositeSubscription();
 
     public PhotosListPresenter(PhotoGridView photoGridView) {
         this.photoGridView = photoGridView;
     }
 
     public void onImagesSaved(List<String> uriList) {
-        Observable.from(uriList)
-                .flatMap(new Func1<String, Observable<String>>() {
-                    @Override
-                    public Observable<String> call(String uri) {
-                        return Observable.just(uri);
-                    }
-                })
-                .map(new Func1<String, ContentValues>() {
-                    @Override
-                    public ContentValues call(String uri) {
-                        ContentValues values = new ContentValues();
-                        values.put(PhotoFilesTable.KEY_FILE_URI, uri);
-                        return values;
-                    }
-                })
-                .toList()
-                .subscribe(
-                        new Action1<List<ContentValues>>() {
+        subscription.add(Observable.from(uriList)
+                        .flatMap(new Func1<String, Observable<String>>() {
                             @Override
-                            public void call(List<ContentValues> contentValues) {
-                                photoGridView.getContext().getContentResolver()
-                                        .bulkInsert(PhotosContentProvider.CONTENT_URI,
-                                                contentValues.toArray(new ContentValues[contentValues.size()])
-                                        );
+                            public Observable<String> call(String uri) {
+                                return Observable.just(uri);
                             }
-                        },
-                        new Action1<Throwable>() {
+                        })
+                        .map(new Func1<String, ContentValues>() {
                             @Override
-                            public void call(Throwable throwable) {
-                                throwable.printStackTrace();
+                            public ContentValues call(String uri) {
+                                ContentValues values = new ContentValues();
+                                values.put(PhotoFilesTable.KEY_FILE_URI, uri);
+                                return values;
                             }
-                        },
-                        new Action0() {
-                            @Override
-                            public void call() {
-                                List<String> uriList = getUriListFromDb();
-                                photoGridView.showItemsFromDiskUrl(uriList);
-                                photoGridView.hideLoading();
-                            }
-                        }
-                );
+                        })
+                        .toList()
+                        .subscribe(
+                                new Action1<List<ContentValues>>() {
+                                    @Override
+                                    public void call(List<ContentValues> contentValues) {
+                                        photoGridView.getContext().getContentResolver()
+                                                .bulkInsert(PhotosContentProvider.CONTENT_URI,
+                                                        contentValues.toArray(new ContentValues[contentValues.size()])
+                                                );
+                                    }
+                                },
+                                new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        throwable.printStackTrace();
+                                    }
+                                },
+                                new Action0() {
+                                    @Override
+                                    public void call() {
+                                        List<String> uriList = getUriListFromDb();
+                                        photoGridView.showItemsFromDiskUrl(uriList);
+                                        photoGridView.hideLoading();
+                                    }
+                                }
+                        )
+        );
     }
 
     private List<String> getUriListFromDb() {
@@ -94,7 +100,7 @@ public class PhotosListPresenter extends Presenter {
         return urls;
     }
 
-    public void setQuery(String query){
+    public void setQuery(String query) {
         this.query = query;
     }
 
@@ -108,11 +114,32 @@ public class PhotosListPresenter extends Presenter {
             photoGridView.showItemsFromDiskUrl(getUriListFromDb());
             photoGridView.hideLoading();
         }
+        subscription.add(MainApplication.getRxBusSingleton().toObserverable()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                new Action1<Object>() {
+                                    @Override
+                                    public void call(Object o) {
+                                        if (o instanceof PhotoDomainEntity) {
+                                            photoGridView.hideLoading();
+//                                    photoGridView.showItemsFromDiskUrl();
+                                        }
+                                    }
+                                },
+                                new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        throwable.printStackTrace();
+                                        photoGridView.showError(throwable.toString());
+                                    }
+                                }
+                        )
+        );
     }
 
     @Override
     public void stop() {
-        if (useCase!=null) {
+        if (useCase != null) {
             useCase.stop();
         }
     }

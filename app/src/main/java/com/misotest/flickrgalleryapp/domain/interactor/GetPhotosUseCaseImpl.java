@@ -7,6 +7,7 @@ import com.misotest.flickrgalleryapp.data.entity.PhotoEntity;
 import com.misotest.flickrgalleryapp.data.entity.PhotosEntity;
 import com.misotest.flickrgalleryapp.data.entity.SizeElement;
 import com.misotest.flickrgalleryapp.data.rest.photosApi.PhotosApi;
+import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 
 import java.util.List;
@@ -48,20 +49,23 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
                                     return Observable.from(photosEntity.photos.photo);
                                 }
                             })
-                            .map(new Func1<PhotoElement, String>() {
+                            .map(new Func1<PhotoElement, PhotosResponse>() {
 
                                 @Override
-                                public String call(PhotoElement photoElement) {
-                                    return photoElement.id;
+                                public PhotosResponse call(PhotoElement photoElement) {
+                                    PhotosResponse photosResponse = new PhotosResponse();
+                                    photosResponse.id = photoElement.id;
+                                    photosResponse.title = photoElement.title;
+                                    return photosResponse;
                                 }
                             })
                             .toList()
                             .subscribeOn(Schedulers.computation())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    new Action1<List<String>>() {
+                                    new Action1<List<PhotosResponse>>() {
                                         @Override
-                                        public void call(List<String> strings) {
+                                        public void call(List<PhotosResponse> strings) {
                                             Timber.e(strings.toString());
                                             getPhotosUrlList(strings);
                                         }
@@ -72,6 +76,11 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
             //if search term not set use default one
             run();
         }
+    }
+
+    class PhotosResponse {
+        public String id;
+        public String title;
     }
 
     /**
@@ -87,61 +96,102 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
     /**
      * Rest call for retrieving photo resources url list
      *
-     * @param ids
+     * @param entities
      */
-    private void getPhotosUrlList(List<String> ids) {
-        subscriptions.add(
-                Observable.from(ids)
-                        .flatMap(new Func1<String, Observable<PhotoEntity>>() {
-                            @Override
-                            public Observable<PhotoEntity> call(String s) {
-                                //call get photo details for each id
-                                return PhotosApi.photosApi.getPhotoData(Constants.FLICKR_API_KEY, s,
-                                        Constants.FLICKR_FORMAT, Constants.NO_JSONP_RESPONSE);
-                            }
-                        })
-                        .flatMap(new Func1<PhotoEntity, Observable<SizeElement>>() {
-                            @Override
-                            public Observable<SizeElement> call(PhotoEntity photoEntity) {
-                                //return only image sizes from response
-                                return Observable.from(photoEntity.sizes.size);
-                            }
-                        })
-                        .filter(new Func1<SizeElement, Boolean>() {
-                            @Override
-                            public Boolean call(SizeElement sizeElement) {
-                                //filter photos with certain image size
-                                return sizeElement.label.equals(Constants.IMAGE_SIZE);
-                            }
-                        })
-                        .flatMap(new Func1<SizeElement, Observable<String>>() {
-                            @Override
-                            public Observable<String> call(SizeElement sizeElement) {
-                                //return only image url
-                                return Observable.just(sizeElement.source);
-                            }
-                        })
-                        .toList()
-                        //async call
-                        .subscribeOn(Schedulers.computation())
-                        //return result on main thread
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                new Action1<List<String>>() {
-
+    private void getPhotosUrlList(List<PhotosResponse> entities) {
+        Observable.from(entities)
+                .flatMap(new Func1<PhotosResponse, Observable<PhotoDomainEntity>>() {
+                    @Override
+                    public Observable<PhotoDomainEntity> call(PhotosResponse response) {
+                        return PhotosApi.photosApi.getPhotoData(Constants.FLICKR_API_KEY, response.id,
+                                Constants.FLICKR_FORMAT, Constants.NO_JSONP_RESPONSE)
+                                .flatMap(new Func1<PhotoEntity, Observable<SizeElement>>() {
                                     @Override
-                                    public void call(List<String> sizeElements) {
-                                        downloadImg(sizeElements);
+                                    public Observable<SizeElement> call(PhotoEntity photoEntity) {
+                                        return Observable.from(photoEntity.sizes.size);
                                     }
-                                },
-                                new Action1<Throwable>() {
+                                })
+                                .filter(new Func1<SizeElement, Boolean>() {
                                     @Override
-                                    public void call(Throwable throwable) {
-                                        throwable.printStackTrace();
+                                    public Boolean call(SizeElement sizeElement) {
+                                        return sizeElement.label.equals(Constants.IMAGE_SIZE);
                                     }
-                                }
-                        )
-        );
+                                })
+                                .map(new Func1<SizeElement, PhotoDomainEntity>() {
+                                    @Override
+                                    public PhotoDomainEntity call(SizeElement sizeElement) {
+                                        return new PhotoDomainEntity(response.id, response.title, sizeElement.source);
+                                    }
+                                });
+                    }
+                })
+                .toList()
+                .subscribe(
+                        new Action1<List<PhotoDomainEntity>>() {
+                            @Override
+                            public void call(List<PhotoDomainEntity> photoDomainEntities) {
+//                                downloadImg(photoDomainEntities);
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                throwable.printStackTrace();
+                            }
+                        }
+                );
+//        subscriptions.add(
+//                Observable.from(ids)
+//                        .flatMap(new Func1<PhotoDomainEntity, Observable<PhotoEntity>>() {
+//                            @Override
+//                            public Observable<PhotoEntity> call(PhotoDomainEntity s) {
+//                                //call get photo details for each id
+////                                return PhotosApi.photosApi.getPhotoData(Constants.FLICKR_API_KEY, s,
+////                                        Constants.FLICKR_FORMAT, Constants.NO_JSONP_RESPONSE);
+//                            }
+//                        })
+//                        .flatMap(new Func1<PhotoEntity, Observable<SizeElement>>() {
+//                            @Override
+//                            public Observable<SizeElement> call(PhotoEntity photoEntity) {
+//                                //return only image sizes from response
+//                                return Observable.from(photoEntity.sizes.size);
+//                            }
+//                        })
+//                        .filter(new Func1<SizeElement, Boolean>() {
+//                            @Override
+//                            public Boolean call(SizeElement sizeElement) {
+//                                //filter photos with certain image size
+//                                return sizeElement.label.equals(Constants.IMAGE_SIZE);
+//                            }
+//                        })
+//                        .flatMap(new Func1<SizeElement, Observable<String>>() {
+//                            @Override
+//                            public Observable<String> call(SizeElement sizeElement) {
+//                                //return only image url
+//                                return Observable.just(sizeElement.source);
+//                            }
+//                        })
+//                        .toList()
+//                                //async call
+//                        .subscribeOn(Schedulers.computation())
+//                                //return result on main thread
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .subscribe(
+//                                new Action1<List<String>>() {
+//
+//                                    @Override
+//                                    public void call(List<String> sizeElements) {
+//                                        downloadImg(sizeElements);
+//                                    }
+//                                },
+//                                new Action1<Throwable>() {
+//                                    @Override
+//                                    public void call(Throwable throwable) {
+//                                        throwable.printStackTrace();
+//                                    }
+//                                }
+//                        )
+//        );
     }
 
     /**
@@ -179,7 +229,6 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
 
     /**
      * Stops RxObservables execution
-     *
      */
     @Override
     public void stop() {
@@ -188,7 +237,6 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
 
     /**
      * Default action to perform
-     *
      */
     @Override
     public void run() {

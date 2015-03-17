@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.DepthPageTransformer;
+import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
 import com.misotest.flickrgalleryapp.presentation.adapters.PhotosSlideAdapter;
 
 import java.util.ArrayList;

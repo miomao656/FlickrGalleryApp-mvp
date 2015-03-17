@@ -48,7 +48,7 @@ public class PhotosContentProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         database = new DatabaseHandler(getContext());
-        return false;
+        return true;
     }
 
     @Override

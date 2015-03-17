@@ -4,7 +4,6 @@ package com.misotest.flickrgalleryapp.presentation.fragments;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import android.widget.Toast;
 
 import com.misotest.flickrgalleryapp.R;
 import com.misotest.flickrgalleryapp.presentation.adapters.PhotosGridAdapter;
+import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
@@ -27,8 +27,7 @@ import butterknife.InjectView;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PhotoGridFragment extends Fragment implements PhotoGridView,
-        PhotosGridAdapter.GridActions {
+public class PhotoGridFragment extends Fragment implements PhotoGridView, PhotosGridAdapter.GridActions {
 
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
@@ -36,6 +35,12 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
     RecyclerView mMyRecyclerView;
     @InjectView(R.id.progress_bar)
     ProgressBar mProgressBar;
+//    @InjectView(R.id.long_press_container)
+//    RelativeLayout mRelativeLayout;
+//    @InjectView(R.id.btn_delete)
+//    ImageButton mImageButtonDelete;
+//    @InjectView(R.id.btn_share)
+//    ImageButton mImageButtonShare;
 
     private GridLayoutManager mGridLayoutManager;
     private PhotosGridAdapter mItemListAdapter;
@@ -56,11 +61,11 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         super.onActivityCreated(savedInstanceState);
         mItemListAdapter = new PhotosGridAdapter(this);
         mGridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 4);
-        mMyRecyclerView.setAdapter(mItemListAdapter);
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
-        mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
+        mMyRecyclerView.setAdapter(mItemListAdapter);
         mPhotoListPresenter = new PhotosListPresenter(this);
-        mPhotoListPresenter.setQuery("pussy");
+        mPhotoListPresenter.setQuery("akita");
         mPhotoListPresenter.startPresenting();
     }
 
@@ -83,8 +88,22 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
     }
 
     @Override
-    public void onLongPhotoClick(int position, String url) {
+    public void onLongPhotoClick(int position, String url, View view) {
         Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    private int getRelativeLeft(View myView) {
+        if (myView.getParent() == myView.getRootView())
+            return myView.getLeft();
+        else
+            return myView.getLeft() + getRelativeLeft((View) myView.getParent());
+    }
+
+    private int getRelativeTop(View myView) {
+        if (myView.getParent() == myView.getRootView())
+            return myView.getTop();
+        else
+            return myView.getTop() + getRelativeTop((View) myView.getParent());
     }
 
     @Override
@@ -118,5 +137,4 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
     public Context getContext() {
         return getActivity().getApplicationContext();
     }
-
 }

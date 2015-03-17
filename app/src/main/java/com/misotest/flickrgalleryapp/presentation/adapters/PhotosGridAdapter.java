@@ -100,8 +100,8 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         viewHolder.mItemImage.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                mGridActions.onLongPhotoClick(position, itemDomainEntity);
-                return false;
+                mGridActions.onLongPhotoClick(position, itemDomainEntity, view);
+                return true;
             }
         });
     }
@@ -110,7 +110,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
 
         void onPhotoClick(int position, ArrayList<String> urls);
 
-        void onLongPhotoClick(int position, String url);
+        void onLongPhotoClick(int position, String url, View view);
     }
 
     @Override

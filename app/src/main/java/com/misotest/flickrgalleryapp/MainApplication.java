@@ -11,6 +11,8 @@ import timber.log.Timber;
  */
 public class MainApplication extends Application {
 
+    private static RxBus mRxBus;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -24,5 +26,12 @@ public class MainApplication extends Application {
                         .enableWebKitInspector(
                                 Stetho.defaultInspectorModulesProvider(this))
                         .build());
+    }
+
+    public static RxBus getRxBusSingleton() {
+        if (mRxBus == null) {
+            mRxBus = new RxBus();
+        }
+        return mRxBus;
     }
 }

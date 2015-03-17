@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation;
+package com.misotest.flickrgalleryapp.presentation.animation;
 
 import android.support.v4.view.ViewPager;
 import android.view.View;
