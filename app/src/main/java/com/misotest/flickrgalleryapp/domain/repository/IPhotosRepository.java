@@ -1,7 +1,6 @@
 package com.misotest.flickrgalleryapp.domain.repository;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 
 import java.util.List;
@@ -20,7 +19,7 @@ public interface IPhotosRepository {
     }
 
     /**
-     * Get a collection of {@link PhotoDomainEntity}.
+     * Get a collection of {@link PhotoDataEntity}.
      *
      * @param photoListCallback A {@link PhotoListCallback} used for notifying clients.
      */

@@ -2,7 +2,6 @@ package com.misotest.flickrgalleryapp.domain.interactor;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepository;
-import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 /**
  * This class is an implementation of {@link IGetPhotosUseCase} that represents a use case for
- * retrieving a collection of all {@link PhotoDomainEntity}.
+ * retrieving a collection of all {@link PhotoDataEntity}.
  */
 public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
 

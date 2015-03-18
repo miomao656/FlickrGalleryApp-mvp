@@ -1,7 +1,8 @@
 package com.misotest.flickrgalleryapp.data.entity;
 
 /**
- * Created by miomao on 3/17/15.
+ * Main data model class when working with rest and database
+ *
  */
 public class PhotoDataEntity {
     public int id;

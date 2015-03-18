@@ -3,14 +3,13 @@ package com.misotest.flickrgalleryapp.data.repository;
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.data.repository.datasource.IPhotoDataStore;
 import com.misotest.flickrgalleryapp.data.repository.datasource.PhotoCloudStore;
-import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
 
 import java.util.List;
 
 /**
- * Interface that represents a Repository for getting {@link PhotoDomainEntity} related data.
+ * Interface that represents a Repository for getting {@link PhotoDataEntity} related data.
  */
 public class PhotoDataRepository implements IPhotosRepository {
 

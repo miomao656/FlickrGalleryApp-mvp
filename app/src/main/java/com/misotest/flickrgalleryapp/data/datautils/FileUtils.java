@@ -14,6 +14,46 @@ public class FileUtils {
     private static final String APP_NAME = "FlickrGallery";
 
     /**
+     * Check if file with certain file-name already exists.
+     *
+     * @param filename
+     * @return
+     */
+    public static boolean isExistingFile(String filename) {
+        File file = new File(filename);
+        return file.exists();
+    }
+
+    /**
+     * Deletes all files from given directory
+     *
+     * @param dir
+     */
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (String aChildren : children) {
+                boolean success = deleteDir(new File(dir, aChildren));
+                if (!success) {
+                    return false;
+                }
+            }
+            // The directory is now empty so delete it
+            return dir.delete();
+        }
+        return false;
+    }
+
+    /**
+     * Deletes file
+     *
+     * @param fileToDelete
+     */
+    public static boolean deleteFile(File fileToDelete) {
+        return fileToDelete != null && fileToDelete.delete();
+    }
+
+    /**
      * Create output file
      *
      * @return
