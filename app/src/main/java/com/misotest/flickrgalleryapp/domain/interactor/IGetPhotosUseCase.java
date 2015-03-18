@@ -5,6 +5,10 @@ import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 
 import java.util.List;
 
+/**
+ * This interface represents a execution unit for a use case to get a collection of {@link PhotoDataEntity}.
+ *
+ */
 public interface IGetPhotosUseCase {
 
     void requestPhotos(int page, String query, UseCaseCallback useCaseCallback);

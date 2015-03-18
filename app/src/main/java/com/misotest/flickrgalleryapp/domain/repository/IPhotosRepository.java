@@ -7,7 +7,7 @@ import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import java.util.List;
 
 /**
- * Created by miomao on 3/17/15.
+ * Interface that represents a Repository for getting {@link PhotoDataEntity} related data.
  */
 public interface IPhotosRepository {
     /**

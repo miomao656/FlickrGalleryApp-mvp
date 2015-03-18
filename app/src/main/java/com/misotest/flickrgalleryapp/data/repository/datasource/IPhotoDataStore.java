@@ -5,6 +5,9 @@ import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 
 import java.util.List;
 
+/**
+ * Interface that represents a data store from where data is retrieved.
+ */
 public interface IPhotoDataStore {
 
     /**

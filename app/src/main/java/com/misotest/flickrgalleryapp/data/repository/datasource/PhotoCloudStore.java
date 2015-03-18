@@ -8,7 +8,6 @@ import com.misotest.flickrgalleryapp.data.entity.PhotoEntity;
 import com.misotest.flickrgalleryapp.data.entity.PhotosEntity;
 import com.misotest.flickrgalleryapp.data.entity.SizeElement;
 import com.misotest.flickrgalleryapp.data.rest.photosApi.PhotosApi;
-import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
 
 import java.util.List;
 
@@ -157,20 +156,20 @@ public class PhotoCloudStore implements IPhotoDataStore {
      *
      * @param domainEntityList
      */
-    private void downloadPhotos(List<PhotoDomainEntity> domainEntityList) {
+    private void downloadPhotos(List<PhotoDataEntity> domainEntityList) {
         subscription.add(
                 Observable.from(domainEntityList)
-                        .flatMap(new Func1<PhotoDomainEntity, Observable<PhotoDataEntity>>() {
+                        .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                             @Override
-                            public Observable<PhotoDataEntity> call(final PhotoDomainEntity photoDomainEntity) {
-                                return BitmapUtils.downloadBitmapFromUrl(photoDomainEntity.url).map(
+                            public Observable<PhotoDataEntity> call(final PhotoDataEntity photoDomainEntity) {
+                                return BitmapUtils.downloadBitmapFromUrl(photoDomainEntity.photo_url).map(
                                         new Func1<String, PhotoDataEntity>() {
                                             @Override
                                             public PhotoDataEntity call(String s) {
                                                 PhotoDataEntity photoDataEntity = new PhotoDataEntity();
-                                                photoDataEntity.photo_id = photoDomainEntity.id;
-                                                photoDataEntity.photo_title = photoDomainEntity.title;
-                                                photoDataEntity.photo_url = photoDomainEntity.url;
+                                                photoDataEntity.photo_id = photoDomainEntity.photo_id;
+                                                photoDataEntity.photo_title = photoDomainEntity.photo_title;
+                                                photoDataEntity.photo_url = photoDomainEntity.photo_url;
                                                 photoDataEntity.file_path = s;
                                                 return photoDataEntity;
                                             }

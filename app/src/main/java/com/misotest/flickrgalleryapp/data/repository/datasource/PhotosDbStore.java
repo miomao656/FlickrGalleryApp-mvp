@@ -22,13 +22,18 @@ import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * Created by miomao on 3/17/15.
+ * {@link IPhotoDataStore} implementation based on database data store.
  */
 public class PhotosDbStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
     private PhotoDataRepositoryListCallback repositoryListCallback;
 
+    /**
+     * Get a list of PhotoDataEntity from database
+     *
+     * @return
+     */
     private List<PhotoDataEntity> getPhotoListFromDb() {
         List<PhotoDataEntity> urls = null;
         ContentResolver resolver = MainApplication.getContext().getContentResolver();
@@ -56,6 +61,11 @@ public class PhotosDbStore implements IPhotoDataStore {
         return urls;
     }
 
+    /**
+     * Geta a list of PhotoPresentationModel from database
+     *
+     * @return
+     */
     private List<PhotoPresentationModel> getUriPresentationListFromDb() {
         List<PhotoPresentationModel> urls = Collections.emptyList();
         ContentResolver resolver = MainApplication.getContext().getContentResolver();
@@ -84,6 +94,12 @@ public class PhotosDbStore implements IPhotoDataStore {
         return urls;
     }
 
+    /**
+     * Save retrieved data from rest to database
+     *
+     * @param uriList
+     * @param isDownloaded
+     */
     public void saveDataToDb(List<PhotoDataEntity> uriList, final boolean isDownloaded) {
         subscription.add(Observable.from(uriList)
                         .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {

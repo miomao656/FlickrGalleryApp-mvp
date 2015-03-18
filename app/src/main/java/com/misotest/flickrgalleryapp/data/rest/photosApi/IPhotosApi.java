@@ -1,6 +1,5 @@
 package com.misotest.flickrgalleryapp.data.rest.photosApi;
 
-
 import com.misotest.flickrgalleryapp.data.entity.PhotoEntity;
 import com.misotest.flickrgalleryapp.data.entity.PhotosEntity;
 
@@ -30,5 +29,4 @@ public interface IPhotosApi {
                                          @Query("format") String format,
                                          @Query("nojsoncallback") int nojsoncallback
     );
-
 }
