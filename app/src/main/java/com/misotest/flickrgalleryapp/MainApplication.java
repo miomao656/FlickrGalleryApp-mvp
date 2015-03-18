@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.facebook.stetho.Stetho;
+import com.misotest.flickrgalleryapp.presentation.utils.RxBus;
 
 import timber.log.Timber;
 

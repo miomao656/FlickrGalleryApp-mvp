@@ -5,9 +5,9 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -43,8 +43,8 @@ public class PhotosContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", DATA_ID);
     }
 
-    public static final String[] PROJECTION = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_PHOTO_ID,
-            PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_PATH};
+    public static final String[] PROJECTION = {PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE,
+            PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
 
     @Override
     public boolean onCreate() {
@@ -67,7 +67,7 @@ public class PhotosContentProvider extends ContentProvider {
                 break;
             case DATA_ID:
                 // Adding the ID to the original query
-                queryBuilder.appendWhere(PhotoFilesTable.KEY_ITEM_ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(PhotoFilesTable.KEY_PHOTO_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -104,58 +104,6 @@ public class PhotosContentProvider extends ContentProvider {
         return Uri.parse(BASE_PATH + "/" + id);
     }
 
-//    @Override
-//    public int bulkInsert(Uri uri, ContentValues[] values) {
-//        final SQLiteDatabase db = database.getWritableDatabase();
-//        final int match = sURIMatcher.match(uri);
-//        int numInserted = 0;
-//        switch (match) {
-//            case DATA:
-//                db.beginTransaction();
-//                try {
-//                    // standard SQL insert statement, that can be reused
-//                    SQLiteStatement insert = db.compileStatement("insert or replace into "
-//                            + PhotosTable.TABLE_NAME + "("
-////                            + PhotosTable.KEY_ITEM_ID + ","
-//                            + PhotosTable.KEY_PHOTO_ID + ","
-//                            + PhotosTable.KEY_PHOTO_DESCRIPTION + ","
-//                            + PhotosTable.KEY_FILE_URI_SMALL + ","
-//                            + PhotosTable.KEY_FILE_URI_LARGE + ","
-//                            + PhotosTable.KEY_PHOTO_URL_SMALL + ","
-//                            + PhotosTable.KEY_PHOTO_URL_LARGE
-//                            + ")" + " values " + "(?,?,?,?,?,?)");
-//
-//                    startTime = Calendar.getInstance().getTimeInMillis();
-//                    ContentValues value;
-//                    for (ContentValues value1 : values) {
-//                        value = value1;
-//                        // bind the 1-indexed ?'s to the values specified
-////                        insert.bindLong(1, value.getAsLong(PhotosTable.KEY_ITEM_ID));
-//                        insert.bindString(2, value.getAsString(PhotosTable.KEY_PHOTO_ID));
-//                        insert.bindString(3, value.getAsString(PhotosTable.KEY_PHOTO_DESCRIPTION));
-//                        insert.bindString(4, value.getAsString(PhotosTable.KEY_FILE_URI_SMALL));
-//                        insert.bindString(5, value.getAsString(PhotosTable.KEY_FILE_URI_LARGE));
-//                        insert.bindString(6, value.getAsString(PhotosTable.KEY_PHOTO_URL_SMALL));
-//                        insert.bindString(7, value.getAsString(PhotosTable.KEY_PHOTO_URL_LARGE));
-//                        insert.run();
-//                    }
-//                    endTime = Calendar.getInstance().getTimeInMillis();
-//                    System.out.println("FOR LOOP TIME!! = " + (endTime - startTime) + " ms");
-//                    db.setTransactionSuccessful();
-//                    numInserted = values.length;
-//                } catch (SQLException ex) {
-//                    Log.e("LOG_TAG", "There was a problem with the bulk insert: ");
-//                } finally {
-//                    db.endTransaction();
-//                    db.close();
-//                    getContext().getContentResolver().notifyChange(uri, null);
-//                }
-//                break;
-//            default:
-//                throw new UnsupportedOperationException("unsupported uri: " + uri);
-//        }
-//        return numInserted;
-//    }
 
     public int bulkInsert(Uri uri, ContentValues[] values) {
         int numInserted = 0;
@@ -171,14 +119,25 @@ public class PhotosContentProvider extends ContentProvider {
         SQLiteDatabase sqlDB = database.getWritableDatabase();
         sqlDB.beginTransaction();
         try {
-            for (ContentValues cv : values) {
-                long newID = sqlDB.insertOrThrow(table, null, cv);
-                if (newID <= 0) {
-                    throw new SQLException("Failed to insert row into " + uri);
-                }
+            //standard SQL insert statement, that can be reused
+            SQLiteStatement insert =
+                    sqlDB.compileStatement("insert or replace into " + table
+                            + "(" +
+                            PhotoFilesTable.KEY_PHOTO_ID + "," +
+                            PhotoFilesTable.KEY_PHOTO_TITLE + "," +
+                            PhotoFilesTable.KEY_PHOTO_URL + "," +
+                            PhotoFilesTable.KEY_PHOTO_PATH + ")" +
+                            " values " + "(?,?,?,?)");
+
+            for (ContentValues value : values) {
+                //bind the 1-indexed ?'s to the values specified
+                insert.bindString(1, value.getAsString(PhotoFilesTable.KEY_PHOTO_ID));
+                insert.bindString(2, value.getAsString(PhotoFilesTable.KEY_PHOTO_TITLE));
+                insert.bindString(3, value.getAsString(PhotoFilesTable.KEY_PHOTO_URL));
+                insert.bindString(4, value.getAsString(PhotoFilesTable.KEY_PHOTO_PATH));
+                insert.execute();
             }
             sqlDB.setTransactionSuccessful();
-            getContext().getContentResolver().notifyChange(uri, null);
             numInserted = values.length;
         } finally {
             sqlDB.endTransaction();
@@ -198,9 +157,9 @@ public class PhotosContentProvider extends ContentProvider {
             case DATA_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_ITEM_ID + "=" + id, null);
+                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_PHOTO_ID + "=" + id, null);
                 } else {
-                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
+                    rowsDeleted = sqlDB.delete(PhotoFilesTable.TABLE_NAME, PhotoFilesTable.KEY_PHOTO_ID + "=" + id + " and " + selection, selectionArgs);
                 }
                 break;
             default:
@@ -222,9 +181,9 @@ public class PhotosContentProvider extends ContentProvider {
             case DATA_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_ITEM_ID + "=" + id, null);
+                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_PHOTO_ID + "=" + id, null);
                 } else {
-                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_ITEM_ID + "=" + id + " and " + selection, selectionArgs);
+                    rowsUpdated = sqlDB.update(PhotoFilesTable.TABLE_NAME, values, PhotoFilesTable.KEY_PHOTO_ID + "=" + id + " and " + selection, selectionArgs);
                 }
                 break;
             default:
@@ -235,7 +194,7 @@ public class PhotosContentProvider extends ContentProvider {
     }
 
     private void checkColumns(String[] projection) {
-        String[] available = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
+        String[] available = {PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

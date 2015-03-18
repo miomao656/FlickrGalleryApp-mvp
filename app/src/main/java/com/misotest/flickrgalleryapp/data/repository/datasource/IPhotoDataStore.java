@@ -25,6 +25,38 @@ public interface IPhotoDataStore {
     static final String DEFAULT_SEARCH_THERM = "akita";
 
     /**
+     * Flickr rest api access key
+     */
+    static final String FLICKR_API_KEY = "90a9eddb63cbe3de1359aaf0e70778aa";
+
+    /**
+     * Flickr rest api response format
+     */
+    static final String FLICKR_FORMAT = "json";
+
+    /**
+     * Flickr rest api privacy filter off
+     */
+    static final int NO_PRIVACY_FILTER = 1;
+
+    /**
+     * Flickr rest api jsonp response off
+     */
+    static final int NO_JSONP_RESPONSE = 1;
+
+    /**
+     * Flickr rest api chosen image size
+     */
+    static final String IMAGE_SIZE = "Large";
+
+    /**
+     * Flickr rest api number of responses per page
+     */
+    static final int PHOTO_PER_PAGE = 50;
+
+    void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback);
+
+    /**
      * UseCaseCallback used for clients to be notified when either a user list has been loaded or any error
      * occurred.
      */
@@ -40,6 +72,8 @@ public interface IPhotoDataStore {
      */
     interface PhotoDataRepositoryDbListCallback {
         void onPhotoDataStored(List<PhotoDataEntity> photoDataEntities);
+
+        void onPhotoDeleted();
 
         void onError(Throwable exception);
     }

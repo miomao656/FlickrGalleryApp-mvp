@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
@@ -64,6 +64,8 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         mPhotosSlideAdapter = new PhotosSlideAdapter();
         mPager.setAdapter(mPhotosSlideAdapter);
         mPager.setPageTransformer(false, new DepthPageTransformer());
+        mPhotoListPresenter = new PhotosListPresenter(this);
+        mPhotoListPresenter.setQuery("akita");
         mPhotoListPresenter.startPresenting();
     }
 
@@ -94,9 +96,11 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public void presentPhotoItems(List<PhotoPresentationModel> itemDomainEntityList) {
-        mPhotosSlideAdapter.addUrls(itemDomainEntityList);
-        mPager.setCurrentItem(position);
+    public void presentPhotos(List<PhotoPresentationModel> itemDomainEntityList) {
+        if (mPhotosSlideAdapter != null && mPager != null) {
+            mPhotosSlideAdapter.addUrls(itemDomainEntityList);
+            mPager.setCurrentItem(position);
+        }
     }
 
     @Override
@@ -106,6 +110,16 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void hideLoading() {
+
+    }
+
+    @Override
+    public void onPhotoDeleted() {
+
+    }
+
+    @Override
+    public void onPhotoUpdated(PhotoPresentationModel presentationModel) {
 
     }
 

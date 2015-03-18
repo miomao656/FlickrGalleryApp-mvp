@@ -10,9 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -49,6 +50,8 @@ public class PhotosSlideAdapter extends PagerAdapter {
 
         final ImageView photoView = (ImageView) itemView.findViewById(R.id.photo_view);
 
+        TextView title = (TextView) itemView.findViewById(R.id.photo_title);
+
         final View view1 = (View) itemView.findViewById(R.id.one);
         final View view2 = (View) itemView.findViewById(R.id.two);
         final View view3 = (View) itemView.findViewById(R.id.three);
@@ -56,82 +59,68 @@ public class PhotosSlideAdapter extends PagerAdapter {
         final View view5 = (View) itemView.findViewById(R.id.five);
         final View view6 = (View) itemView.findViewById(R.id.six);
 
-        if (urls.get(position).file_path!=null) {
+        final PhotoPresentationModel presentationModel = urls.get(position);
+
+        title.setText(presentationModel.photo_title);
+
+        if (presentationModel.photo_file_path !=null && !presentationModel.photo_file_path.isEmpty()) {
             //loading images using picasso with simple callback to get colors with Palette api
-            Picasso.with(container.getContext()).load(new File(urls.get(position).file_path)).into(photoView, new Callback() {
+            Picasso.with(container.getContext()).load(new File(presentationModel.photo_file_path)).into(photoView, new Callback() {
                 @Override
                 public void onSuccess() {
                     //get bitmap from view and generate colors for six views
-                    Bitmap bitmap = ((BitmapDrawable) photoView.getDrawable()).getBitmap();
-
-                    Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            if (palette != null) {
-                                //get colors or default color if palete getter null
-                                int vibrant = palette.getVibrantColor(0x000000);
-                                int vibrantLight = palette.getLightVibrantColor(0x000000);
-                                int vibrantDark = palette.getDarkVibrantColor(0x000000);
-                                int muted = palette.getMutedColor(0x000000);
-                                int mutedLight = palette.getLightMutedColor(0x000000);
-                                int mutedDark = palette.getDarkMutedColor(0x000000);
-                                //set colors to views
-                                view1.setBackgroundColor(vibrant);
-                                view2.setBackgroundColor(vibrantLight);
-                                view3.setBackgroundColor(vibrantDark);
-                                view4.setBackgroundColor(muted);
-                                view5.setBackgroundColor(mutedLight);
-                                view6.setBackgroundColor(mutedDark);
-                            }
-                        }
-                    });
+                    onPhotoLoaded(photoView, view1, view2, view3, view4, view5, view6);
                 }
 
                 @Override
                 public void onError() {
-                    Timber.e("Error loading image: " + urls.get(position));
+                    Timber.e("Error loading image: " + presentationModel);
                 }
             });
         } else {
             //loading images using picasso with simple callback to get colors with Palette api
-            Picasso.with(container.getContext()).load(urls.get(position).photo_url).into(photoView, new Callback() {
+            Picasso.with(container.getContext()).load(presentationModel.photo_url).into(photoView, new Callback() {
                 @Override
                 public void onSuccess() {
                     //get bitmap from view and generate colors for six views
-                    Bitmap bitmap = ((BitmapDrawable) photoView.getDrawable()).getBitmap();
-
-                    Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            if (palette != null) {
-                                //get colors or default color if palete getter null
-                                int vibrant = palette.getVibrantColor(0x000000);
-                                int vibrantLight = palette.getLightVibrantColor(0x000000);
-                                int vibrantDark = palette.getDarkVibrantColor(0x000000);
-                                int muted = palette.getMutedColor(0x000000);
-                                int mutedLight = palette.getLightMutedColor(0x000000);
-                                int mutedDark = palette.getDarkMutedColor(0x000000);
-                                //set colors to views
-                                view1.setBackgroundColor(vibrant);
-                                view2.setBackgroundColor(vibrantLight);
-                                view3.setBackgroundColor(vibrantDark);
-                                view4.setBackgroundColor(muted);
-                                view5.setBackgroundColor(mutedLight);
-                                view6.setBackgroundColor(mutedDark);
-                            }
-                        }
-                    });
+                    onPhotoLoaded(photoView, view1, view2, view3, view4, view5, view6);
                 }
 
                 @Override
                 public void onError() {
-                    Timber.e("Error loading image: " + urls.get(position));
+                    Timber.e("Error loading image: " + presentationModel);
                 }
             });
         }
         container.addView(itemView);
 
         return itemView;
+    }
+
+    private void onPhotoLoaded(ImageView photoView, final View view1, final View view2, final View view3, final View view4, final View view5, final View view6) {
+        Bitmap bitmap = ((BitmapDrawable) photoView.getDrawable()).getBitmap();
+
+        Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                if (palette != null) {
+                    //get colors or default color if palete getter null
+                    int vibrant = palette.getVibrantColor(0x000000);
+                    int vibrantLight = palette.getLightVibrantColor(0x000000);
+                    int vibrantDark = palette.getDarkVibrantColor(0x000000);
+                    int muted = palette.getMutedColor(0x000000);
+                    int mutedLight = palette.getLightMutedColor(0x000000);
+                    int mutedDark = palette.getDarkMutedColor(0x000000);
+                    //set colors to views
+                    view1.setBackgroundColor(vibrant);
+                    view2.setBackgroundColor(vibrantLight);
+                    view3.setBackgroundColor(vibrantDark);
+                    view4.setBackgroundColor(muted);
+                    view5.setBackgroundColor(mutedLight);
+                    view6.setBackgroundColor(mutedDark);
+                }
+            }
+        });
     }
 
     @Override

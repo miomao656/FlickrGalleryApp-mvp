@@ -12,12 +12,16 @@ public interface IGetPhotosUseCase {
 
     void requestPhotos(int page, String query, UseCaseCallback useCaseCallback);
 
+    void deletePhoto(String photoId, UseCaseCallback useCaseUseCaseCallback);
+
     /**
      * UseCaseCallback used to be notified when either a photos collection has been loaded or an error
      * happened.
      */
     interface UseCaseCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> usersCollection);
+
+        void onPhotoDeleted();
 
         void onError(Throwable errorBundle);
     }

@@ -23,6 +23,11 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         }
 
         @Override
+        public void onPhotoDeleted() {
+            useCaseCallback.onPhotoDeleted();
+        }
+
+        @Override
         public void onError(Throwable errorBundle) {
             notifyError(errorBundle);
         }
@@ -46,5 +51,15 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         }
         this.useCaseCallback = useCaseCallback;
         photoDataRepository.getPhotoList(page, query, repositoryCallback);
+    }
+
+    @Override
+    public void deletePhoto(String photoId, UseCaseCallback useCaseUseCaseCallback) {
+        if (useCaseCallback == null) {
+            throw new IllegalArgumentException("Interactor useCaseCallback cannot be null!!!");
+        } else {
+            this.useCaseCallback = useCaseCallback;
+        }
+        photoDataRepository.deletePhotoFromDevice(photoId, repositoryCallback);
     }
 }

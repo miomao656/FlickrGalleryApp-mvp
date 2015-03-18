@@ -1,6 +1,5 @@
 package com.misotest.flickrgalleryapp.data.repository.datasource;
 
-import com.misotest.flickrgalleryapp.Constants;
 import com.misotest.flickrgalleryapp.data.datautils.BitmapUtils;
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.data.entity.PhotoElement;
@@ -39,8 +38,8 @@ public class PhotoCloudStore implements IPhotoDataStore {
             query = DEFAULT_SEARCH_THERM;
         }
         subscription.add(
-                PhotosApi.photosApi.getPhotos(Constants.FLICKR_API_KEY, query, Constants.NO_PRIVACY_FILTER,
-                        Constants.PHOTO_PER_PAGE, page, Constants.FLICKR_FORMAT, Constants.NO_JSONP_RESPONSE)
+                PhotosApi.photosApi.getPhotos(FLICKR_API_KEY, query, NO_PRIVACY_FILTER,
+                        PHOTO_PER_PAGE, page, FLICKR_FORMAT, NO_JSONP_RESPONSE)
                         .flatMap(new Func1<PhotosEntity, Observable<PhotoElement>>() {
                             @Override
                             public Observable<PhotoElement> call(PhotosEntity photosEntity) {
@@ -89,8 +88,8 @@ public class PhotoCloudStore implements IPhotoDataStore {
                         .flatMap(new Func1<PhotosResponse, Observable<PhotoDataEntity>>() {
                             @Override
                             public Observable<PhotoDataEntity> call(final PhotosResponse response) {
-                                return PhotosApi.photosApi.getPhotoData(Constants.FLICKR_API_KEY, response.id,
-                                        Constants.FLICKR_FORMAT, Constants.NO_JSONP_RESPONSE)
+                                return PhotosApi.photosApi.getPhotoData(FLICKR_API_KEY, response.id,
+                                        FLICKR_FORMAT, NO_JSONP_RESPONSE)
                                         .flatMap(new Func1<PhotoEntity, Observable<SizeElement>>() {
                                             @Override
                                             public Observable<SizeElement> call(PhotoEntity photoEntity) {
@@ -100,13 +99,13 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                         .filter(new Func1<SizeElement, Boolean>() {
                                             @Override
                                             public Boolean call(SizeElement sizeElement) {
-                                                return sizeElement.label.equals(Constants.IMAGE_SIZE);
+                                                return sizeElement.label.equals(IMAGE_SIZE);
                                             }
                                         })
                                         .map(new Func1<SizeElement, PhotoDataEntity>() {
                                             @Override
                                             public PhotoDataEntity call(SizeElement sizeElement) {
-                                                return new PhotoDataEntity(0, response.id, sizeElement.source, response.title, "");
+                                                return new PhotoDataEntity(response.id, response.title, sizeElement.source, "");
                                             }
                                         });
                             }
@@ -143,13 +142,17 @@ public class PhotoCloudStore implements IPhotoDataStore {
 
     @Override
     public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
+        //save photo to server
+    }
 
+    @Override
+    public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
+        //delete photo from server
     }
 
     /**
      * Temp inner class for saving id and title and mapping it to PhotoDataEntity
      * when rest returns photo details response
-     *
      */
     class PhotosResponse {
         public String id;
@@ -175,7 +178,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                                 photoDataEntity.photo_id = photoDomainEntity.photo_id;
                                                 photoDataEntity.photo_title = photoDomainEntity.photo_title;
                                                 photoDataEntity.photo_url = photoDomainEntity.photo_url;
-                                                photoDataEntity.file_path = s;
+                                                photoDataEntity.photo_file_path = s;
                                                 return photoDataEntity;
                                             }
                                         }

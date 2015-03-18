@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp;
+package com.misotest.flickrgalleryapp.presentation.utils;
 
 import rx.Observable;
 import rx.subjects.PublishSubject;

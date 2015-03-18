@@ -13,13 +13,12 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
-import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -46,6 +45,8 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     private GridLayoutManager mGridLayoutManager;
     private PhotosGridAdapter mItemListAdapter;
     private PhotosListPresenter mPhotoListPresenter;
+    private boolean isPaging;
+    private int removedPosition;
 
     public PhotoGridFragment() {
     }
@@ -65,9 +66,14 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
         mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
         mMyRecyclerView.setAdapter(mItemListAdapter);
+        startPresenter();
+    }
+
+    private void startPresenter() {
         mPhotoListPresenter = new PhotosListPresenter(this);
         mPhotoListPresenter.setQuery("akita");
         mPhotoListPresenter.startPresenting();
+        isPaging = false;
     }
 
     @Override
@@ -89,28 +95,16 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
-    public void onLongPhotoClick(int position, String url, View view) {
+    public void onLongPhotoClick(int position, PhotoPresentationModel presentationModel, View view) {
         Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
-    }
-
-    private int getRelativeLeft(View myView) {
-        if (myView.getParent() == myView.getRootView())
-            return myView.getLeft();
-        else
-            return myView.getLeft() + getRelativeLeft((View) myView.getParent());
-    }
-
-    private int getRelativeTop(View myView) {
-        if (myView.getParent() == myView.getRootView())
-            return myView.getTop();
-        else
-            return myView.getTop() + getRelativeTop((View) myView.getParent());
+        mPhotoListPresenter.deletePhoto(presentationModel.photo_id);
+        removedPosition = position;
     }
 
     @Override
-    public void presentPhotoItems(List<PhotoPresentationModel> photoPresentationModels) {
+    public void presentPhotos(List<PhotoPresentationModel> photoPresentationModels) {
         if (photoPresentationModels != null && !photoPresentationModels.isEmpty()) {
-            mItemListAdapter.addPhotos(photoPresentationModels);
+            mItemListAdapter.addPhotos(photoPresentationModels, isPaging);
         }
     }
 
@@ -121,7 +115,19 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void hideLoading() {
-        mProgressBar.setVisibility(View.GONE);
+        if (mProgressBar!=null) {
+            mProgressBar.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onPhotoDeleted() {
+        mItemListAdapter.removePhoto(removedPosition);
+    }
+
+    @Override
+    public void onPhotoUpdated(PhotoPresentationModel presentationModel) {
+
     }
 
     @Override

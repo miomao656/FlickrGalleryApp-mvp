@@ -4,8 +4,8 @@ package com.misotest.flickrgalleryapp.presentation.presenters;
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
-import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
-import com.misotest.flickrgalleryapp.presentation.mapper.PhotoPresentationModelMapper;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
 import java.util.List;
@@ -26,6 +26,11 @@ public class PhotosListPresenter extends Presenter {
         public void onPhotoListLoaded(List<PhotoDataEntity> photosCollection) {
             photoGridView.hideLoading();
             showPhotoListInView(photosCollection);
+        }
+
+        @Override
+        public void onPhotoDeleted() {
+            photoGridView.onPhotoDeleted();
         }
 
         @Override
@@ -58,10 +63,25 @@ public class PhotosListPresenter extends Presenter {
     private void showPhotoListInView(List<PhotoDataEntity> usersCollection) {
         final List<PhotoPresentationModel> userModelsCollection =
                 this.mapper.transform(usersCollection);
-        photoGridView.presentPhotoItems(userModelsCollection);
+        photoGridView.presentPhotos(userModelsCollection);
     }
 
+    /**
+     * Request use case to get additional list of photos
+     *
+     * @param page
+     * @param query
+     */
     public void getPage(int page, String query) {
         getPhotosUseCase.requestPhotos(page, query, useCaseUseCaseCallback);
+    }
+
+    /**
+     * Request delete photo from use case
+     *
+     * @param photoId
+     */
+    public void deletePhoto(String photoId){
+        getPhotosUseCase.deletePhoto(photoId, useCaseUseCaseCallback);
     }
 }

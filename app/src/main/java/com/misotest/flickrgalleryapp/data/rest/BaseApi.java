@@ -1,7 +1,5 @@
 package com.misotest.flickrgalleryapp.data.rest;
 
-import com.misotest.flickrgalleryapp.Constants;
-
 import retrofit.RestAdapter;
 
 /**
@@ -9,8 +7,10 @@ import retrofit.RestAdapter;
  */
 public class BaseApi {
 
+    private static final String FLICKR_API_URL = "https://api.flickr.com/services/rest";
+
     protected static final RestAdapter.Builder baseRestAdapterBuilder = new RestAdapter.Builder()
             //enable to see full log in the console
 //            .setLogLevel(RestAdapter.LogLevel.FULL)
-            .setEndpoint(Constants.FLICKR_API_URL);
+            .setEndpoint(FLICKR_API_URL);
 }

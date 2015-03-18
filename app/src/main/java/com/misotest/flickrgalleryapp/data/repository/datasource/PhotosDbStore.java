@@ -9,9 +9,11 @@ import android.os.Build;
 import com.misotest.flickrgalleryapp.MainApplication;
 import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
 import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
+import com.misotest.flickrgalleryapp.data.datautils.FileUtils;
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,11 +52,10 @@ public class PhotosDbStore implements IPhotoDataStore {
             if (cursor.moveToFirst()) {
                 urls = new ArrayList<PhotoDataEntity>(cursor.getCount());
                 do {
-                    urls.add(new PhotoDataEntity(cursor.getInt(0),
+                    urls.add(new PhotoDataEntity(cursor.getString(0),
                             cursor.getString(1),
                             cursor.getString(2),
-                            cursor.getString(3),
-                            cursor.getString(4)
+                            cursor.getString(3)
                     ));
                 } while (cursor.moveToNext());
             }
@@ -64,7 +65,7 @@ public class PhotosDbStore implements IPhotoDataStore {
     }
 
     /**
-     * Geta a list of PhotoPresentationModel from database
+     * Get a list of PhotoPresentationModel from database
      *
      * @return
      */
@@ -81,11 +82,10 @@ public class PhotosDbStore implements IPhotoDataStore {
             if (cursor.moveToFirst()) {
                 urls = new ArrayList<PhotoPresentationModel>(cursor.getCount());
                 do {
-                    urls.add(new PhotoPresentationModel(cursor.getInt(0),
+                    urls.add(new PhotoPresentationModel(cursor.getString(0),
                                     cursor.getString(1),
                                     cursor.getString(2),
-                                    cursor.getString(3),
-                                    cursor.getString(4)
+                                    cursor.getString(3)
                             )
                     );
                 } while (cursor.moveToNext());
@@ -116,9 +116,7 @@ public class PhotosDbStore implements IPhotoDataStore {
                                 values.put(PhotoFilesTable.KEY_PHOTO_ID, uri.photo_id);
                                 values.put(PhotoFilesTable.KEY_PHOTO_TITLE, uri.photo_title);
                                 values.put(PhotoFilesTable.KEY_PHOTO_URL, uri.photo_url);
-                                if (isDownloaded) {
-                                    values.put(PhotoFilesTable.KEY_PHOTO_PATH, uri.file_path);
-                                }
+                                values.put(PhotoFilesTable.KEY_PHOTO_PATH, uri.photo_file_path);
                                 return values;
                             }
                         })
@@ -151,6 +149,12 @@ public class PhotosDbStore implements IPhotoDataStore {
         );
     }
 
+    /**
+     * Retrieves PhotoDataEntity from database
+     *
+     * @param photo_id
+     * @return
+     */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private PhotoDataEntity getPhotoDataEntity(String photo_id) {
         String selection = PhotoFilesTable.KEY_PHOTO_ID + " = '"
@@ -168,11 +172,10 @@ public class PhotosDbStore implements IPhotoDataStore {
         if (c != null) {
             if (c.moveToFirst()) {
                 dataEntity = new PhotoDataEntity(
-                        c.getInt(0),
+                        c.getString(0),
                         c.getString(1),
                         c.getString(2),
-                        c.getString(3),
-                        c.getString(4)
+                        c.getString(3)
                 );
             }
             c.close();
@@ -180,12 +183,18 @@ public class PhotosDbStore implements IPhotoDataStore {
         return dataEntity;
     }
 
+    /**
+     * Saves file path to the Photo database row
+     *
+     * @param photoDataEntity
+     */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void saveOrUpdatePhoto(PhotoDataEntity photoDataEntity) {
         ContentValues values = new ContentValues();
         values.put(PhotoFilesTable.KEY_PHOTO_ID, photoDataEntity.photo_id);
         values.put(PhotoFilesTable.KEY_PHOTO_TITLE, photoDataEntity.photo_title);
         values.put(PhotoFilesTable.KEY_PHOTO_URL, photoDataEntity.photo_url);
+        values.put(PhotoFilesTable.KEY_PHOTO_PATH, photoDataEntity.photo_file_path);
         MainApplication.getContext().getContentResolver()
                 .update(
                         PhotosContentProvider.CONTENT_URI,
@@ -193,6 +202,28 @@ public class PhotosDbStore implements IPhotoDataStore {
                         PhotoFilesTable.KEY_PHOTO_ID + "=" + photoDataEntity.photo_id,
                         null
                 );
+    }
+
+    /**
+     * Deletes a row in photos table and file from the device if it exists
+     *
+     * @param photoID
+     */
+    private void deletePhotoFromDb(String photoID) {
+        PhotoDataEntity entity = getPhotoDataEntity(photoID);
+        if (entity != null) {
+            if (FileUtils.isExistingFile(entity.photo_file_path)) {
+                FileUtils.deleteFile(new File(entity.photo_file_path));
+            }
+            MainApplication.getContext().getContentResolver()
+                    .delete(PhotosContentProvider.CONTENT_URI,
+                            PhotoFilesTable.KEY_PHOTO_ID + " = " + photoID,
+                            null
+                    );
+        } else {
+            repositoryDbListCallback.onError(new Exception("nothing to delete!"));
+        }
+        repositoryDbListCallback.onPhotoDeleted();
     }
 
     @Override
@@ -207,5 +238,14 @@ public class PhotosDbStore implements IPhotoDataStore {
         }
         this.repositoryDbListCallback = callback;
         saveDataToDb(dataEntityList, false);
+    }
+
+    @Override
+    public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
+        if (photoDataRepositoryDbListCallback == null) {
+            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+        }
+        this.repositoryDbListCallback = photoDataRepositoryDbListCallback;
+        deletePhotoFromDb(photoId);
     }
 }
