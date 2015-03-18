@@ -1,8 +1,10 @@
 package com.misotest.flickrgalleryapp.data.repository.datasource;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.os.Build;
 
 import com.misotest.flickrgalleryapp.MainApplication;
 import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
@@ -27,7 +29,7 @@ import rx.subscriptions.CompositeSubscription;
 public class PhotosDbStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
-    private PhotoDataRepositoryListCallback repositoryListCallback;
+    private PhotoDataRepositoryDbListCallback repositoryDbListCallback;
 
     /**
      * Get a list of PhotoDataEntity from database
@@ -48,12 +50,12 @@ public class PhotosDbStore implements IPhotoDataStore {
             if (cursor.moveToFirst()) {
                 urls = new ArrayList<PhotoDataEntity>(cursor.getCount());
                 do {
-                    new PhotoDataEntity(cursor.getInt(0),
+                    urls.add(new PhotoDataEntity(cursor.getInt(0),
                             cursor.getString(1),
                             cursor.getString(2),
                             cursor.getString(3),
                             cursor.getString(4)
-                    );
+                    ));
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -69,10 +71,9 @@ public class PhotosDbStore implements IPhotoDataStore {
     private List<PhotoPresentationModel> getUriPresentationListFromDb() {
         List<PhotoPresentationModel> urls = Collections.emptyList();
         ContentResolver resolver = MainApplication.getContext().getContentResolver();
-        String[] projection = PhotosContentProvider.PROJECTION;
         Cursor cursor =
                 resolver.query(PhotosContentProvider.CONTENT_URI,
-                        projection,
+                        PhotosContentProvider.PROJECTION,
                         null,
                         null,
                         null);
@@ -137,31 +138,74 @@ public class PhotosDbStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-//                                        repositoryListCallback.onError();
+                                        repositoryDbListCallback.onError(throwable);
                                     }
                                 },
                                 new Action0() {
                                     @Override
                                     public void call() {
-                                        repositoryListCallback.onPhotoDataEntityListLoaded(getPhotoListFromDb());
+                                        repositoryDbListCallback.onPhotoDataStored(getPhotoListFromDb());
                                     }
                                 }
                         )
         );
     }
 
-    private void saveUriListToDb() {
-        List<PhotoPresentationModel> urls = null;
-        ContentResolver resolver = MainApplication.getContext().getContentResolver();
-        String[] projection = PhotosContentProvider.PROJECTION;
-//        Cursor cursor = resolver.applyBatch();
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private PhotoDataEntity getPhotoDataEntity(String photo_id) {
+        String selection = PhotoFilesTable.KEY_PHOTO_ID + " = '"
+                + photo_id + "'";
+        PhotoDataEntity dataEntity = null;
+        Cursor c = MainApplication.getContext().getContentResolver()
+                .query(
+                        PhotosContentProvider.CONTENT_URI,
+                        PhotosContentProvider.PROJECTION,
+                        selection,
+                        null,
+                        null,
+                        null
+                );
+        if (c != null) {
+            if (c.moveToFirst()) {
+                dataEntity = new PhotoDataEntity(
+                        c.getInt(0),
+                        c.getString(1),
+                        c.getString(2),
+                        c.getString(3),
+                        c.getString(4)
+                );
+            }
+            c.close();
+        }
+        return dataEntity;
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void saveOrUpdatePhoto(PhotoDataEntity photoDataEntity) {
+        ContentValues values = new ContentValues();
+        values.put(PhotoFilesTable.KEY_PHOTO_ID, photoDataEntity.photo_id);
+        values.put(PhotoFilesTable.KEY_PHOTO_TITLE, photoDataEntity.photo_title);
+        values.put(PhotoFilesTable.KEY_PHOTO_URL, photoDataEntity.photo_url);
+        MainApplication.getContext().getContentResolver()
+                .update(
+                        PhotosContentProvider.CONTENT_URI,
+                        values,
+                        PhotoFilesTable.KEY_PHOTO_ID + "=" + photoDataEntity.photo_id,
+                        null
+                );
     }
 
     @Override
     public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback callback) {
+
+    }
+
+    @Override
+    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("Interactor callback cannot be null!!!");
         }
-        this.repositoryListCallback = callback;
+        this.repositoryDbListCallback = callback;
+        saveDataToDb(dataEntityList, false);
     }
 }

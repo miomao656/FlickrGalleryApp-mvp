@@ -2,7 +2,6 @@ package com.misotest.flickrgalleryapp.domain.interactor;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepository;
-import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         }
 
         @Override
-        public void onError(ErrorBundle errorBundle) {
+        public void onError(Throwable errorBundle) {
             notifyError(errorBundle);
         }
     };
@@ -36,7 +35,7 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         useCaseCallback.onPhotoListLoaded(photoDataEntityList);
     }
 
-    private void notifyError(final ErrorBundle errorBundle) {
+    private void notifyError(final Throwable errorBundle) {
         useCaseCallback.onError(errorBundle);
     }
 

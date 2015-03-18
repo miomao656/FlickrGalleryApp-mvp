@@ -1,7 +1,6 @@
 package com.misotest.flickrgalleryapp.domain.repository;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 
 import java.util.List;
 
@@ -15,7 +14,7 @@ public interface IPhotosRepository {
     interface PhotoListCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> photoCollection);
 
-        void onError(ErrorBundle errorBundle);
+        void onError(Throwable errorBundle);
     }
 
     /**

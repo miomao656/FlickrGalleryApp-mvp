@@ -47,7 +47,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
         final PhotoPresentationModel itemDomainEntity = itemDomainEntityList.get(position);
-        if (!itemDomainEntity.file_path.equals("")) {
+        if (itemDomainEntity.file_path != null && !itemDomainEntity.file_path.equals("")) {
             Picasso.with(viewHolder.mItemImage.getContext())
                     .load(new File(itemDomainEntity.file_path))
                     .resize(200, 200)

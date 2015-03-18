@@ -141,6 +141,11 @@ public class PhotoCloudStore implements IPhotoDataStore {
         getPhotos(page, query);
     }
 
+    @Override
+    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
+
+    }
+
     /**
      * Temp inner class for saving id and title and mapping it to PhotoDataEntity
      * when rest returns photo details response

@@ -2,7 +2,6 @@ package com.misotest.flickrgalleryapp.presentation.presenters;
 
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
@@ -30,9 +29,9 @@ public class PhotosListPresenter extends Presenter {
         }
 
         @Override
-        public void onError(ErrorBundle errorBundle) {
+        public void onError(Throwable errorBundle) {
             photoGridView.hideLoading();
-            photoGridView.showError(errorBundle.getErrorMessage());
+            photoGridView.showError(errorBundle.toString());
         }
     };
 

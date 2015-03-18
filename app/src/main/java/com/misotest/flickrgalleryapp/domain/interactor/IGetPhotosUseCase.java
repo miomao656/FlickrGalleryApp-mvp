@@ -1,7 +1,6 @@
 package com.misotest.flickrgalleryapp.domain.interactor;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 
 import java.util.List;
 
@@ -20,6 +19,6 @@ public interface IGetPhotosUseCase {
     interface UseCaseCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> usersCollection);
 
-        void onError(ErrorBundle errorBundle);
+        void onError(Throwable errorBundle);
     }
 }
