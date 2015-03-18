@@ -59,7 +59,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                             }
                         })
                         .toList()
-                        .subscribeOn(Schedulers.computation())
+                        .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 new Action1<List<PhotosResponse>>() {
@@ -113,7 +113,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                             }
                         })
                         .toList()
-                        .subscribeOn(Schedulers.computation())
+                        .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 new Action1<List<PhotoDataEntity>>() {
@@ -179,7 +179,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                             }
                         })
                         .toList()
-                        .subscribeOn(Schedulers.computation())
+                        .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 new Action1<List<PhotoDataEntity>>() {

@@ -84,7 +84,7 @@ public class PhotosDbStore implements IPhotoDataStore {
         return urls;
     }
 
-    public void saveDataToDb(List<PhotoDataEntity> uriList, boolean isDownloaded) {
+    public void saveDataToDb(List<PhotoDataEntity> uriList, final boolean isDownloaded) {
         subscription.add(Observable.from(uriList)
                         .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                             @Override
