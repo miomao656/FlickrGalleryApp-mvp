@@ -15,11 +15,14 @@ import java.util.List;
 public class PhotoDataRepository implements IPhotosRepository {
 
     @Override
-    public void getPhotoList(int page, String query, PhotoListCallback photoListCallback) {
+    public void getPhotoList(int page, String query, final PhotoListCallback photoListCallback) {
         //we always get all users from the cloud
+        if (photoListCallback == null) {
+            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+        }
         final PhotoCloudStore photoCloudStore = new PhotoCloudStore();
         photoCloudStore.getPhotoEntityList(page, query,
-                new IPhotoDataStore.PhotoDataEntityListCallback() {
+                new IPhotoDataStore.PhotoDataRepositoryListCallback() {
                     @Override
                     public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
                         photoListCallback.onPhotoListLoaded(photoDataEntities);
@@ -30,19 +33,6 @@ public class PhotoDataRepository implements IPhotosRepository {
                         photoListCallback.onError(exception);
                     }
                 }
-//                new IPhotoDataStroe.UserListCallback() {
-//            @Override
-//            public void onUserListLoaded(Collection<UserEntity> usersCollection) {
-//                Collection<User> users =
-//                        UserDataRepository.this.userEntityDataMapper.transform(usersCollection);
-//                userListCallback.onUserListLoaded(users);
-//            }
-//
-//            @Override
-//            public void onError(Exception exception) {
-//                userListCallback.onError(new RepositoryErrorBundle(exception));
-//            }
-//        }
         );
     }
 }

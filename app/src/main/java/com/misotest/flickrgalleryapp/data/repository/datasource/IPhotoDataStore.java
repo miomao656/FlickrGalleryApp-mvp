@@ -10,13 +10,15 @@ public interface IPhotoDataStore {
     /**
      * Get a collection of {@link PhotoDataEntity}.
      */
-    void getPhotoEntityList(int page, String query, PhotoDataEntityListCallback callback);
+    void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback callback);
+
+    static final String DEFAULT_SEARCH_THERM = "akita";
 
     /**
-     * Callback used for clients to be notified when either a user list has been loaded or any error
+     * UseCaseCallback used for clients to be notified when either a user list has been loaded or any error
      * occurred.
      */
-    interface PhotoDataEntityListCallback {
+    interface PhotoDataRepositoryListCallback {
         void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities);
 
         void onError(ErrorBundle exception);

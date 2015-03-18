@@ -21,14 +21,20 @@ import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 /**
- * Created by miomao on 3/17/15.
+ * {@link IPhotoDataStore} implementation based on connections to the api (Cloud).
  */
 public class PhotoCloudStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
-    private static final String DEFAULT_SEARCH_THERM = "akita";
-    private PhotoDataEntityListCallback restCallback;
+    private PhotoDataRepositoryListCallback photoDataRepositoryListCallback;
 
+    /**
+     * Rest call for retrieving a list of PhotosEntity objects and mapping them to temp
+     * class PhotoResponse and calling getPhotosUrlList
+     *
+     * @param page
+     * @param query
+     */
     public void getPhotos(int page, String query) {
         if (!query.isEmpty()) {
             query = DEFAULT_SEARCH_THERM;
@@ -67,6 +73,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
+//                                        photoDataRepositoryListCallback.onError();
                                     }
                                 }
                         )
@@ -106,20 +113,20 @@ public class PhotoCloudStore implements IPhotoDataStore {
                             }
                         })
                         .toList()
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 new Action1<List<PhotoDataEntity>>() {
                                     @Override
                                     public void call(List<PhotoDataEntity> photoDataEntityList) {
-//                                        downloadImg(photoDomainEntities);
-                                        Timber.d("bla");
-//                                        sendPhotosToPresenter(photoDomainEntities);
-                                        restCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
+                                        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
+//                                        photoDataRepositoryListCallback.onError();
                                     }
                                 }
                         )
@@ -127,11 +134,19 @@ public class PhotoCloudStore implements IPhotoDataStore {
     }
 
     @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataEntityListCallback callback) {
-        this.restCallback = callback;
+    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback) {
+        if (photoDataRepositoryListCallback == null) {
+            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+        }
+        this.photoDataRepositoryListCallback = photoDataRepositoryListCallback;
         getPhotos(page, query);
     }
 
+    /**
+     * Temp inner class for saving id and title and mapping it to PhotoDataEntity
+     * when rest returns photo details response
+     *
+     */
     class PhotosResponse {
         public String id;
         public String title;
@@ -142,7 +157,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
      *
      * @param domainEntityList
      */
-    private void downloadImg(List<PhotoDomainEntity> domainEntityList) {
+    private void downloadPhotos(List<PhotoDomainEntity> domainEntityList) {
         subscription.add(
                 Observable.from(domainEntityList)
                         .flatMap(new Func1<PhotoDomainEntity, Observable<PhotoDataEntity>>() {
@@ -177,6 +192,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
+//                                        photoDataRepositoryListCallback.onError();
                                     }
                                 }
                         )

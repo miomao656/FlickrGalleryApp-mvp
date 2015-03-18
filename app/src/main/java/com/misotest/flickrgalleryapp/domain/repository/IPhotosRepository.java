@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface IPhotosRepository {
     /**
-     * Callback used to be notified when either a photo list has been loaded or an error happened.
+     * UseCaseCallback used to be notified when either a photo list has been loaded or an error happened.
      */
     interface PhotoListCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> photoCollection);
