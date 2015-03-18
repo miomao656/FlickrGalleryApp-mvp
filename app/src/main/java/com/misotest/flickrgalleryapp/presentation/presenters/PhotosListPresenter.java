@@ -8,11 +8,17 @@ import android.database.Cursor;
 import com.misotest.flickrgalleryapp.MainApplication;
 import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
 import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
+import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.domain.PhotoDomainEntity;
+import com.misotest.flickrgalleryapp.domain.exception.ErrorBundle;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
+import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
+import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.mapper.PhotoPresentationModelMapper;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import rx.Observable;
@@ -22,34 +28,57 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
 
+/**
+ * {@link Presenter} that controls communication between views and models of the presentation
+ * layer.
+ */
 public class PhotosListPresenter extends Presenter {
 
     private final PhotoGridView photoGridView;
-    GetPhotosUseCaseImpl useCase;
+    private GetPhotosUseCaseImpl getPhotosUseCase;
     private String query;
     private CompositeSubscription subscription = new CompositeSubscription();
+    private PhotoPresentationModelMapper mapper = new PhotoPresentationModelMapper();
+
+    private final IGetPhotosUseCase.Callback callback = new IGetPhotosUseCase.Callback() {
+        @Override
+        public void onPhotoListLoaded(List<PhotoDataEntity> photosCollection) {
+            photoGridView.hideLoading();
+            showPhotoListInView(photosCollection);
+        }
+
+        @Override
+        public void onError(ErrorBundle errorBundle) {
+            photoGridView.hideLoading();
+            photoGridView.showError(errorBundle.getErrorMessage());
+        }
+    };
 
     public PhotosListPresenter(PhotoGridView photoGridView) {
         this.photoGridView = photoGridView;
     }
 
-    public void onImagesSaved(List<String> uriList) {
+    public void onImagesSaved(List<PhotoDomainEntity> uriList) {
         subscription.add(Observable.from(uriList)
-                        .flatMap(new Func1<String, Observable<String>>() {
+                        .flatMap(new Func1<PhotoDomainEntity, Observable<PhotoDomainEntity>>() {
                             @Override
-                            public Observable<String> call(String uri) {
-                                return Observable.just(uri);
+                            public Observable<PhotoDomainEntity> call(PhotoDomainEntity photoDomainEntity) {
+                                return Observable.just(photoDomainEntity);
                             }
                         })
-                        .map(new Func1<String, ContentValues>() {
+                        .map(new Func1<PhotoDomainEntity, ContentValues>() {
                             @Override
-                            public ContentValues call(String uri) {
+                            public ContentValues call(PhotoDomainEntity uri) {
                                 ContentValues values = new ContentValues();
-                                values.put(PhotoFilesTable.KEY_FILE_URI, uri);
+                                values.put(PhotoFilesTable.KEY_PHOTO_ID, uri.id);
+                                values.put(PhotoFilesTable.KEY_PHOTO_TITLE, uri.title);
+                                values.put(PhotoFilesTable.KEY_PHOTO_URL, uri.url);
+//                                values.put(PhotoFilesTable.KEY_PHOTO_PATH, uri.);
                                 return values;
                             }
                         })
                         .toList()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 new Action1<List<ContentValues>>() {
                                     @Override
@@ -69,8 +98,7 @@ public class PhotosListPresenter extends Presenter {
                                 new Action0() {
                                     @Override
                                     public void call() {
-                                        List<String> uriList = getUriListFromDb();
-                                        photoGridView.showItemsFromDiskUrl(uriList);
+                                        photoGridView.presentPhotoItems(getUriListFromDb());
                                         photoGridView.hideLoading();
                                     }
                                 }
@@ -78,9 +106,9 @@ public class PhotosListPresenter extends Presenter {
         );
     }
 
-    private List<String> getUriListFromDb() {
-        List<String> urls = new ArrayList<String>();
-        ContentResolver resolver = photoGridView.getContext().getContentResolver();
+    private List<PhotoPresentationModel> getUriListFromDb() {
+        List<PhotoPresentationModel> urls = Collections.emptyList();
+        ContentResolver resolver = MainApplication.getContext().getContentResolver();
         String[] projection = PhotosContentProvider.PROJECTION;
         Cursor cursor =
                 resolver.query(PhotosContentProvider.CONTENT_URI,
@@ -90,9 +118,15 @@ public class PhotosListPresenter extends Presenter {
                         null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                urls = new ArrayList<String>(cursor.getCount());
+                urls = new ArrayList<PhotoPresentationModel>(cursor.getCount());
                 do {
-                    urls.add(cursor.getString(1));
+                    urls.add(new PhotoPresentationModel(cursor.getInt(0),
+                                    cursor.getString(1),
+                                    cursor.getString(2),
+                                    cursor.getString(3),
+                                    cursor.getString(4)
+                            )
+                    );
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -108,43 +142,29 @@ public class PhotosListPresenter extends Presenter {
     public void startPresenting() {
         photoGridView.showLoading();
         if (getUriListFromDb().isEmpty()) {
-            useCase = new GetPhotosUseCaseImpl(this);
-            useCase.getPhotos(0, query);
+            getPhotosUseCase = new GetPhotosUseCaseImpl();
+            getPage(0, query);
         } else {
-            photoGridView.showItemsFromDiskUrl(getUriListFromDb());
+            photoGridView.presentPhotoItems(getUriListFromDb());
             photoGridView.hideLoading();
         }
-        subscription.add(MainApplication.getRxBusSingleton().toObserverable()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                new Action1<Object>() {
-                                    @Override
-                                    public void call(Object o) {
-                                        if (o instanceof PhotoDomainEntity) {
-                                            photoGridView.hideLoading();
-//                                    photoGridView.showItemsFromDiskUrl();
-                                        }
-                                    }
-                                },
-                                new Action1<Throwable>() {
-                                    @Override
-                                    public void call(Throwable throwable) {
-                                        throwable.printStackTrace();
-                                        photoGridView.showError(throwable.toString());
-                                    }
-                                }
-                        )
-        );
     }
 
     @Override
     public void stop() {
-        if (useCase != null) {
-            useCase.stop();
+        if (getPhotosUseCase != null) {
+            getPhotosUseCase.unregister();
         }
     }
 
-    public void getPage(int page) {
-        useCase.getPhotos(page, query);
+    private void showPhotoListInView(List<PhotoDataEntity> usersCollection) {
+        final List<PhotoPresentationModel> userModelsCollection =
+                this.mapper.transform(usersCollection);
+        photoGridView.presentPhotoItems(userModelsCollection);
+    }
+
+    public void getPage(int page, String query) {
+        getPhotosUseCase.execute(callback);
+        getPhotosUseCase.requestPhotos(page, query, callback);
     }
 }

@@ -14,7 +14,6 @@ import java.net.URLConnection;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.schedulers.Schedulers;
 
 /**
  * Util class for handling image related actions
@@ -38,7 +37,7 @@ public class BitmapUtils {
                     subscriber.onError(e);
                 }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     /**

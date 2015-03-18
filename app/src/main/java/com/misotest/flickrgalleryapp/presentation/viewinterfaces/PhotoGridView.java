@@ -1,10 +1,12 @@
 package com.misotest.flickrgalleryapp.presentation.viewinterfaces;
 
+import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+
 import java.util.List;
 
 public interface PhotoGridView extends BaseView {
 
-    void showItemsFromDiskUrl(List<String> itemDomainEntityList);
+    void presentPhotoItems(List<PhotoPresentationModel> itemDomainEntityList);
 
     void showLoading();
 

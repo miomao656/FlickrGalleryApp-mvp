@@ -13,4 +13,6 @@ public class PhotosApi extends BaseApi {
 
     private static RestAdapter restAdapter = baseRestAdapterBuilder.build();
     public static IPhotosApi photosApi = restAdapter.create(IPhotosApi.class);
+
+
 }

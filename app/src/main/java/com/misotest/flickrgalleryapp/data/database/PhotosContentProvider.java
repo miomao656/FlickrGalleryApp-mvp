@@ -43,7 +43,8 @@ public class PhotosContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", DATA_ID);
     }
 
-    public static final String[] PROJECTION = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_FILE_URI};
+    public static final String[] PROJECTION = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_PHOTO_ID,
+            PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_PATH};
 
     @Override
     public boolean onCreate() {
@@ -234,7 +235,7 @@ public class PhotosContentProvider extends ContentProvider {
     }
 
     private void checkColumns(String[] projection) {
-        String[] available = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_FILE_URI};
+        String[] available = {PhotoFilesTable.KEY_ITEM_ID, PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

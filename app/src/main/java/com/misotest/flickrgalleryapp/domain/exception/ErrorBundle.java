@@ -1,14 +1,11 @@
-/**
- * Copyright (C) 2014 android10.org. All rights reserved.
- * @author Fernando Cejas (the android10 coder)
- */
 package com.misotest.flickrgalleryapp.domain.exception;
 
 /**
- * Interface to represent a wrapper around an {@link Exception} to manage errors.
+ * Interface to represent a wrapper around an {@link Throwable} to manage errors.
  */
 public interface ErrorBundle {
-  Exception getException();
+
+  Throwable getException();
 
   String getErrorMessage();
 }

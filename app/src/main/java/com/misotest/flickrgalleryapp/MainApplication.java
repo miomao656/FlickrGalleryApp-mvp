@@ -1,6 +1,7 @@
 package com.misotest.flickrgalleryapp;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.facebook.stetho.Stetho;
 
@@ -13,9 +14,12 @@ public class MainApplication extends Application {
 
     private static RxBus mRxBus;
 
+    private static Context context;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        context = this.getApplicationContext();
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
@@ -33,5 +37,9 @@ public class MainApplication extends Application {
             mRxBus = new RxBus();
         }
         return mRxBus;
+    }
+
+    public static Context getContext() {
+        return context;
     }
 }

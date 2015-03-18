@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.activity;
+package com.misotest.flickrgalleryapp.presentation.views.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,8 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.fragments.FragmentHelper;
-import com.misotest.flickrgalleryapp.presentation.fragments.PhotoGridFragment;
+import com.misotest.flickrgalleryapp.presentation.views.fragments.FragmentHelper;
+import com.misotest.flickrgalleryapp.presentation.views.fragments.PhotoGridFragment;
 
 
 public class MainActivity extends Activity {

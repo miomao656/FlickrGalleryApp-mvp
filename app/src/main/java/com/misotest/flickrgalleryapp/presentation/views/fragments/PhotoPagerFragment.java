@@ -1,6 +1,7 @@
-package com.misotest.flickrgalleryapp.presentation.fragments;
+package com.misotest.flickrgalleryapp.presentation.views.fragments;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -10,18 +11,20 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
+import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
-import com.misotest.flickrgalleryapp.presentation.adapters.PhotosSlideAdapter;
+import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosSlideAdapter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class PhotoPagerFragment extends Fragment implements View.OnClickListener {
+public class PhotoPagerFragment extends Fragment implements View.OnClickListener, PhotoGridView{
 
     private static final String POSITION = "position";
-    private static final String URL_LIST = "param2";
     public static final String TAG = PhotoPagerFragment.class.getSimpleName();
 
     @InjectView(R.id.pager)
@@ -30,15 +33,14 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     RelativeLayout mToolbar;
 
     private int position;
-    private ArrayList<String> urlList;
 
     private PhotosSlideAdapter mPhotosSlideAdapter;
+    private PhotosListPresenter mPhotoListPresenter;
 
-    public static PhotoPagerFragment newInstance(int position, ArrayList<String> urls) {
+    public static PhotoPagerFragment newInstance(int position) {
         PhotoPagerFragment fragment = new PhotoPagerFragment();
         Bundle args = new Bundle();
         args.putInt(POSITION, position);
-        args.putStringArrayList(URL_LIST, urls);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,20 +54,17 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             position = getArguments().getInt(POSITION);
-            urlList = getArguments().getStringArrayList(URL_LIST);
         }
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (urlList != null && !urlList.isEmpty()) {
-            mPhotosSlideAdapter = new PhotosSlideAdapter();
-            mPhotosSlideAdapter.addUrls(urlList);
-            mPager.setAdapter(mPhotosSlideAdapter);
-            mPager.setPageTransformer(false, new DepthPageTransformer());
-            mPager.setCurrentItem(position);
-        }
+        mPhotoListPresenter = new PhotosListPresenter(this);
+        mPhotosSlideAdapter = new PhotosSlideAdapter();
+        mPager.setAdapter(mPhotosSlideAdapter);
+        mPager.setPageTransformer(false, new DepthPageTransformer());
+        mPhotoListPresenter.startPresenting();
     }
 
     @Nullable
@@ -92,5 +91,36 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
                 getActivity().onBackPressed();
                 break;
         }
+    }
+
+    @Override
+    public void presentPhotoItems(List<PhotoPresentationModel> itemDomainEntityList) {
+        mPhotosSlideAdapter.addUrls(itemDomainEntityList);
+        mPager.setCurrentItem(position);
+    }
+
+    @Override
+    public void showLoading() {
+
+    }
+
+    @Override
+    public void hideLoading() {
+
+    }
+
+    @Override
+    public void showError(String error) {
+
+    }
+
+    @Override
+    public void hideError() {
+
+    }
+
+    @Override
+    public Context getContext() {
+        return getActivity().getApplicationContext();
     }
 }

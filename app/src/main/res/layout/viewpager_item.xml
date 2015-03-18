@@ -5,7 +5,6 @@
 
     <ImageView
         android:id="@+id/photo_view"
-        android:layout_margin="20dp"
         android:scaleType="centerCrop"
         android:layout_above="@+id/colors_contaner"
         android:layout_centerHorizontal="true"
@@ -16,9 +15,9 @@
         android:id="@+id/colors_contaner"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
+        android:layout_margin="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="56dp">
+        android:layout_height="40dp">
 
         <View
             android:id="@+id/one"

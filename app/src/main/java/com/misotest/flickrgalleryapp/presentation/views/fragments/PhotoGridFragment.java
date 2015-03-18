@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.fragments;
+package com.misotest.flickrgalleryapp.presentation.views.fragments;
 
 
 import android.app.Fragment;
@@ -13,7 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.adapters.PhotosGridAdapter;
+import com.misotest.flickrgalleryapp.presentation.PhotoPresentationModel;
+import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
@@ -82,9 +83,9 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
-    public void onPhotoClick(int position, ArrayList<String> urls) {
+    public void onPhotoClick(int position) {
         FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
-                PhotoPagerFragment.newInstance(position, urls), true, PhotoPagerFragment.TAG);
+                PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
     }
 
     @Override
@@ -107,9 +108,9 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
-    public void showItemsFromDiskUrl(List<String> itemDomainEntityList) {
-        if (itemDomainEntityList != null && !itemDomainEntityList.isEmpty()) {
-            mItemListAdapter.addPhotos(itemDomainEntityList);
+    public void presentPhotoItems(List<PhotoPresentationModel> photoPresentationModels) {
+        if (photoPresentationModels != null && !photoPresentationModels.isEmpty()) {
+            mItemListAdapter.addPhotos(photoPresentationModels);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.fragments;
+package com.misotest.flickrgalleryapp.presentation.views.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;

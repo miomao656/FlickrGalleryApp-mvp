@@ -12,7 +12,7 @@ public abstract class Presenter {
     public abstract void startPresenting();
 
     /**
-     * Called when the presenter is stop, i.e when an activity
+     * Called when the presenter is unregister, i.e when an activity
      * or a fragment finishes
      */
     public abstract void stop ();

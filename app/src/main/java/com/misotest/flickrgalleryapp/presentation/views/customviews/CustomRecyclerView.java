@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.customviews;
+package com.misotest.flickrgalleryapp.presentation.views.customviews;
 
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
