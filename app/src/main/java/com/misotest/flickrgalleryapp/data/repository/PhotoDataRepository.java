@@ -20,43 +20,34 @@ public class PhotoDataRepository implements IPhotosRepository {
     private PhotoListCallback photoListCallback;
 
     private IPhotoDataStore.PhotoDataRepositoryDbListCallback dbListCallback = new IPhotoDataStore.PhotoDataRepositoryDbListCallback() {
+
         @Override
-        public void onPhotoDataStored(List<PhotoDataEntity> photoDataEntities) {
-            photoListCallback.onPhotoListUpdated(photoDataEntities);
+        public void onPhotoDbDataSaved(List<PhotoDataEntity> photoDataEntities) {
+            if (photoDataEntities != null) {
+                photoListCallback.onPhotoListUpdated(photoDataEntities);
+            }
         }
 
         @Override
-        public void onPhotoDeleted() {
-            photoListCallback.onPhotoDeleted();
+        public void onPhotoDeleted(String photoID) {
+            photoListCallback.onPhotoDeleted(photoID);
         }
 
         @Override
         public void onError(Throwable exception) {
             photoListCallback.onError(exception);
         }
+
+        @Override
+        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
+            photoListCallback.onPhotoUpdated(photoDataEntity);
+        }
     };
 
     private IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
-            photosDbStore.savePhotoEntityList(photoDataEntities,
-                    new IPhotoDataStore.PhotoDataRepositoryDbListCallback() {
-                        @Override
-                        public void onPhotoDataStored(List<PhotoDataEntity> photoDataEntities) {
-                            photoListCallback.onPhotoListLoaded(photoDataEntities);
-                        }
-
-                        @Override
-                        public void onPhotoDeleted() {
-                            photoListCallback.onPhotoDeleted();
-                        }
-
-                        @Override
-                        public void onError(Throwable exception) {
-                            photoListCallback.onError(exception);
-                        }
-                    }
-            );
+            photosDbStore.savePhotoEntityList(photoDataEntities, dbListCallback);
         }
 
         @Override

@@ -1,9 +1,10 @@
 package com.misotest.flickrgalleryapp.presentation.views.adapters;
 
 import android.animation.Animator;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,9 +27,24 @@ import butterknife.InjectView;
  */
 public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.ViewHolder> {
 
+    final Handler handler = new Handler();
+    Runnable mLongPressed = new Runnable() {
+        public void run() {
+            Log.i("", "Long press!");
+//            mGridActions.onLongPhotoClick();
+        }
+    };
     private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
-
     private GridActions mGridActions;
+
+    /**
+     * Constructor including callback for onclick events
+     *
+     * @param mGridActions
+     */
+    public PhotosGridAdapter(GridActions mGridActions) {
+        this.mGridActions = mGridActions;
+    }
 
     /**
      * Add photo list to adapter and refresh added views
@@ -41,7 +57,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
             for (PhotoPresentationModel element : presentationModels) {
                 presentationModelList.add(element);
             }
-            notifyItemRangeChanged(position, presentationModels.size() - 1);
+            notifyItemRangeChanged(position, presentationModels.size());
         } else {
             presentationModelList.clear();
             for (PhotoPresentationModel element : presentationModels) {
@@ -51,27 +67,17 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         }
     }
 
+    /**
+     * Update photo list view new data and refresh views
+     *
+     * @param presentationModels
+     */
     public void updatePhotos(List<PhotoPresentationModel> presentationModels) {
         presentationModelList.clear();
         for (PhotoPresentationModel model : presentationModels) {
             presentationModelList.add(model);
         }
         notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
-    }
-
-    public void removePhoto(int position) {
-        presentationModelList.remove(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, presentationModelList.size() - 1);
-    }
-
-    /**
-     * Constructor including callback for onclick events
-     *
-     * @param mGridActions
-     */
-    public PhotosGridAdapter(GridActions mGridActions) {
-        this.mGridActions = mGridActions;
     }
 
     @Override
@@ -112,6 +118,19 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
                 return true;
             }
         });
+//        viewHolder.mItemImage.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View view, MotionEvent motionEvent) {
+//                Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
+//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+//                    handler.postDelayed(mLongPressed, 1000);
+//                }
+//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+//                    handler.removeCallbacks(mLongPressed);
+//                }
+//                return false;
+//            }
+//        });
     }
 
     /**
@@ -124,12 +143,8 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         return new Callback() {
             @Override
             public void onSuccess() {
-                AnimatorSet animatorSet = new AnimatorSet();
                 ObjectAnimator animator = ObjectAnimator.ofFloat(viewHolder.mItemImage, View.ALPHA, 0, 1);
-//                ObjectAnimator animator2 = ObjectAnimator.ofFloat(viewHolder.mItemImage, "x", 100);
-//                TranslateAnimation translateAnimation = new TranslateAnimation(viewHolder.mItemImage.getContext(),)
                 animator.setDuration(400);
-//                animator2.setDuration(400);
                 animator.addListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animator) {
@@ -151,9 +166,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
                     }
                 });
                 animator.start();
-//                animatorSet.playTogether(animator, animator2);
-//                animatorSet.playTogether(animator, animator2);
-//                animatorSet.start();
             }
 
             @Override
@@ -164,13 +176,34 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     }
 
     /**
-     * Callback for on click and on long click events for recycler adapter
+     * Update photo at photo downloaded to device
+     *
+     * @param presentationModel
      */
-    public interface GridActions {
+    public void updatePhoto(PhotoPresentationModel presentationModel) {
+        PhotoPresentationModel photoPresentationModel = null;
+        for (PhotoPresentationModel model : presentationModelList) {
+            if (model.photo_id.equals(presentationModel.photo_id)) {
+                model.photo_file_path = presentationModel.photo_file_path;
+                photoPresentationModel = model;
+            }
+        }
+        if (photoPresentationModel != null) {
+            notifyItemChanged(presentationModelList.indexOf(photoPresentationModel));
+        }
+    }
 
-        void onPhotoClick(int position);
-
-        void onLongPhotoClick(int position, PhotoPresentationModel presentationModel, View view);
+    /**
+     * Delete photo with photo_id at removed position and refresh view
+     *
+     * @param photo_id
+     * @param removedPosition
+     */
+    public void deletedPhoto(String photo_id, int removedPosition) {
+        if (presentationModelList.get(removedPosition).photo_id.equals(photo_id)) {
+            presentationModelList.remove(removedPosition);
+        }
+        notifyItemRemoved(removedPosition);
     }
 
     @Override
@@ -183,7 +216,20 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         return presentationModelList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * Callback for on click and on long click events for recycler adapter
+     */
+    public interface GridActions {
+
+        void onPhotoClick(int position);
+
+        void onLongPhotoClick(int position, PhotoPresentationModel presentationModel, View view);
+    }
+
+    /**
+     * Class representing view holder for recycler view list elements
+     */
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         @InjectView(R.id.photo_view)
         ImageView mItemImage;
@@ -191,6 +237,12 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
+            mItemImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
         }
     }
 }

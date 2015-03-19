@@ -10,12 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.utils.FragmentHelper;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
 
@@ -25,7 +27,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 /**
- * A placeholder fragment containing a simple view.
+ * A Fragment containing a grid view.
  */
 public class PhotoGridFragment extends Fragment implements PhotoGridView, PhotosGridAdapter.GridActions {
 
@@ -35,8 +37,8 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     RecyclerView mMyRecyclerView;
     @InjectView(R.id.progress_bar)
     ProgressBar mProgressBar;
-//    @InjectView(R.id.long_press_container)
-//    RelativeLayout mRelativeLayout;
+    @InjectView(R.id.long_press_container)
+    RelativeLayout mRelativeLayout;
 //    @InjectView(R.id.btn_delete)
 //    ImageButton mImageButtonDelete;
 //    @InjectView(R.id.btn_share)
@@ -65,6 +67,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
         mGridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 4);
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
         mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
+        mMyRecyclerView.setHasFixedSize(true);
         mMyRecyclerView.setAdapter(mItemListAdapter);
         startPresenter();
     }
@@ -92,6 +95,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     public void onPhotoClick(int position) {
         FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
                 PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
+        mRelativeLayout.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -122,19 +126,14 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void hideLoading() {
-        if (mProgressBar!=null) {
+        if (mProgressBar != null) {
             mProgressBar.setVisibility(View.GONE);
         }
     }
 
     @Override
-    public void onPhotoDeleted() {
-        mItemListAdapter.removePhoto(removedPosition);
-    }
-
-    @Override
-    public void onPhotoUpdated(PhotoPresentationModel presentationModel) {
-
+    public void onPhotoDeleted(String photoID) {
+        mItemListAdapter.deletedPhoto(photoID, removedPosition);
     }
 
     @Override
@@ -145,6 +144,13 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     @Override
     public void hideError() {
 
+    }
+
+    @Override
+    public void updatePhotoInList(PhotoPresentationModel presentationModel) {
+        if (presentationModel != null) {
+            mItemListAdapter.updatePhoto(presentationModel);
+        }
     }
 
     @Override

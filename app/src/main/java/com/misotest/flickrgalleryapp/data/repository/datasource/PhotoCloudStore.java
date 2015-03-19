@@ -71,7 +71,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-//                                        photoDataRepositoryListCallback.onError();
+                                        photoDataRepositoryListCallback.onError(throwable);
                                     }
                                 }
                         )
@@ -118,12 +118,12 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(List<PhotoDataEntity> photoDataEntityList) {
                                         photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
-                                        downloadPhotos(photoDataEntityList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
+                                        throwable.printStackTrace();
                                         photoDataRepositoryListCallback.onError(throwable);
                                     }
                                 }
@@ -161,22 +161,19 @@ public class PhotoCloudStore implements IPhotoDataStore {
     }
 
     /**
-     * Temp inner class for saving id and title and mapping it to PhotoDataEntity
-     * when rest returns photo details response
-     */
-    class PhotosResponse {
-        public String id;
-        public String title;
-    }
-
-    /**
      * RxObservable for downloading a list of files from url's to local storage
      *
      * @param domainEntityList
      */
-    private void downloadPhotos(List<PhotoDataEntity> domainEntityList) {
+    public void downloadPhotos(List<PhotoDataEntity> domainEntityList, final PhotoDataRepositoryListCallback callback) {
         subscription.add(
                 Observable.from(domainEntityList)
+                        .filter(new Func1<PhotoDataEntity, Boolean>() {
+                            @Override
+                            public Boolean call(PhotoDataEntity photoDataEntity) {
+                                return photoDataEntity.photo_file_path.isEmpty();
+                            }
+                        })
                         .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                             @Override
                             public Observable<PhotoDataEntity> call(final PhotoDataEntity photoDomainEntity) {
@@ -195,23 +192,32 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 );
                             }
                         })
-                        .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                new Action1<List<PhotoDataEntity>>() {
+                                new Action1<PhotoDataEntity>() {
                                     @Override
-                                    public void call(List<PhotoDataEntity> uriList) {
-                                        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(uriList);
+                                    public void call(PhotoDataEntity uriList) {
+                                        callback.onPhotoDownloaded(uriList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        photoDataRepositoryListCallback.onError(throwable);
+                                        throwable.printStackTrace();
+                                        callback.onError(throwable);
                                     }
                                 }
                         )
         );
+    }
+
+    /**
+     * Temp inner class for saving id and title and mapping it to PhotoDataEntity
+     * when rest returns photo details response
+     */
+    class PhotosResponse {
+        public String id;
+        public String title;
     }
 }

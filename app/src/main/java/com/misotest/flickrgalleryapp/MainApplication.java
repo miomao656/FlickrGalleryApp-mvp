@@ -9,13 +9,30 @@ import com.misotest.flickrgalleryapp.presentation.utils.RxBus;
 import timber.log.Timber;
 
 /**
- * Created by miomao on 3/13/15.
+ * Root application class
  */
 public class MainApplication extends Application {
 
     private static RxBus mRxBus;
 
     private static Context context;
+
+    //todo use rx bus as an event bus for communication between components in app
+    public static RxBus getRxBusSingleton() {
+        if (mRxBus == null) {
+            mRxBus = new RxBus();
+        }
+        return mRxBus;
+    }
+
+    /**
+     * Getter for root application context
+     *
+     * @return
+     */
+    public static Context getContext() {
+        return context;
+    }
 
     @Override
     public void onCreate() {
@@ -24,6 +41,7 @@ public class MainApplication extends Application {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
+        //debuging tool from facebook
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
                         .enableDumpapp(
@@ -31,16 +49,5 @@ public class MainApplication extends Application {
                         .enableWebKitInspector(
                                 Stetho.defaultInspectorModulesProvider(this))
                         .build());
-    }
-
-    public static RxBus getRxBusSingleton() {
-        if (mRxBus == null) {
-            mRxBus = new RxBus();
-        }
-        return mRxBus;
-    }
-
-    public static Context getContext() {
-        return context;
     }
 }

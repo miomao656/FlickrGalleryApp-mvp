@@ -5,7 +5,7 @@ package com.misotest.flickrgalleryapp.domain.exception;
  */
 public interface ErrorBundle {
 
-  Throwable getException();
+    Throwable getException();
 
-  String getErrorMessage();
+    String getErrorMessage();
 }

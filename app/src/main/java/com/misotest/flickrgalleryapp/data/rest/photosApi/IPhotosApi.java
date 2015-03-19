@@ -9,7 +9,6 @@ import rx.Observable;
 
 /**
  * Retrofit interface with declared methods for interacting with flickr api
- *
  */
 public interface IPhotosApi {
 

@@ -6,7 +6,6 @@ import retrofit.RestAdapter;
 
 /**
  * Photos api Retrofit creation class
- *
  */
 public class PhotosApi extends BaseApi {
     private static RestAdapter restAdapter = baseRestAdapterBuilder.build();

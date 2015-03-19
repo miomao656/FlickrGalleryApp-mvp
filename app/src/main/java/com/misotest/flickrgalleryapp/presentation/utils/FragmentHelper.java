@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.views.fragments;
+package com.misotest.flickrgalleryapp.presentation.utils;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -9,7 +9,6 @@ import timber.log.Timber;
 
 /**
  * Fragment operations
- *
  */
 public class FragmentHelper {
 

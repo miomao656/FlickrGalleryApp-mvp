@@ -6,10 +6,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.views.fragments.FragmentHelper;
+import com.misotest.flickrgalleryapp.presentation.utils.FragmentHelper;
 import com.misotest.flickrgalleryapp.presentation.views.fragments.PhotoGridFragment;
 
-
+/**
+ * Main activity in fragment oriented app
+ */
 public class MainActivity extends Activity {
 
     @Override
@@ -18,15 +20,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         FragmentHelper.prepareAndShowFragment(this, R.id.fragment_container,
                 new PhotoGridFragment(), false, PhotoGridFragment.TAG);
-//        ContentValues values = new ContentValues();
-//        values.put(PhotosTable.KEY_PHOTO_ID, "blalbja");
-//        values.put(PhotosTable.KEY_PHOTO_DESCRIPTION, "blalbja");
-//        values.put(PhotosTable.KEY_FILE_URI_SMALL, "blalbja");
-//        values.put(PhotosTable.KEY_FILE_URI_LARGE, "blalbja");
-//        values.put(PhotosTable.KEY_PHOTO_URL_SMALL, "blalbja");
-//        values.put(PhotosTable.KEY_PHOTO_URL_LARGE, "blalbja");
-//
-//        getContentResolver().insert(PhotosContentProvider.CONTENT_URI, values);
     }
 
 

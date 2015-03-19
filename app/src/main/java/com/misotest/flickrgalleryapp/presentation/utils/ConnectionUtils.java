@@ -5,7 +5,6 @@ import android.net.ConnectivityManager;
 
 /**
  * Helper class that provides Internet connection utility methods.
- *
  */
 public final class ConnectionUtils {
 

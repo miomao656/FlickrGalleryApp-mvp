@@ -14,12 +14,11 @@ public interface PhotoGridView extends BaseView {
 
     void hideLoading();
 
-    void onPhotoDeleted();
-
-    void onPhotoUpdated(PhotoPresentationModel presentationModel);
+    void onPhotoDeleted(String photoID);
 
     void showError(String error);
 
     void hideError();
 
+    void updatePhotoInList(PhotoPresentationModel transform);
 }

@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * This interface represents a execution unit for a use case to get a collection of {@link PhotoDataEntity}.
- *
  */
 public interface IGetPhotosUseCase {
 
@@ -21,10 +20,12 @@ public interface IGetPhotosUseCase {
     interface UseCaseCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> usersCollection);
 
-        void onPhotoDeleted();
+        void onPhotoDeleted(String photoID);
 
         void onError(Throwable errorBundle);
 
         void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList);
+
+        void onPhotoUpdated(PhotoDataEntity photoDataEntity);
     }
 }

@@ -32,6 +32,31 @@ public class PhotosDbStore implements IPhotoDataStore {
     private PhotoDataRepositoryDbListCallback repositoryDbListCallback;
 
     /**
+     * Used to call rest service and download image to device
+     */
+    private PhotoCloudStore cloudStore = new PhotoCloudStore();
+
+    /**
+     * Callback to download images and update database
+     */
+    private IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
+        @Override
+        public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
+
+        }
+
+        @Override
+        public void onPhotoDownloaded(PhotoDataEntity photoDataEntity) {
+            updatePhotoInDb(photoDataEntity);
+        }
+
+        @Override
+        public void onError(Throwable exception) {
+            repositoryDbListCallback.onError(exception);
+        }
+    };
+
+    /**
      * Get a list of PhotoDataEntity from database
      *
      * @return
@@ -66,9 +91,8 @@ public class PhotosDbStore implements IPhotoDataStore {
      * Save retrieved data from rest to database
      *
      * @param uriList
-     * @param isDownloaded
      */
-    public void saveDataToDb(List<PhotoDataEntity> uriList, final boolean isDownloaded) {
+    public void saveDataToDb(List<PhotoDataEntity> uriList) {
         subscription.add(Observable.from(uriList)
                         .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                             @Override
@@ -109,11 +133,32 @@ public class PhotosDbStore implements IPhotoDataStore {
                                 new Action0() {
                                     @Override
                                     public void call() {
-                                        repositoryDbListCallback.onPhotoDataStored(getPhotoListFromDb());
+                                        cloudStore.downloadPhotos(parseToDownload(), listCallback);
+                                        repositoryDbListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
                                     }
                                 }
                         )
         );
+    }
+
+    /**
+     * Check database and return list with photos that have not been downloaded
+     *
+     * @return
+     */
+    private List<PhotoDataEntity> parseToDownload() {
+        List<PhotoDataEntity> existing = getPhotoListFromDb();
+        List<PhotoDataEntity> toDownload = new ArrayList<>();
+        if (existing != null) {
+            for (PhotoDataEntity entity : existing) {
+                if (entity.photo_file_path.isEmpty()) {
+                    toDownload.add(entity);
+                }
+            }
+            existing.clear();
+            existing = null;
+        }
+        return toDownload;
     }
 
     /**
@@ -166,7 +211,7 @@ public class PhotosDbStore implements IPhotoDataStore {
                 .update(
                         PhotosContentProvider.CONTENT_URI,
                         values,
-                        PhotoFilesTable.KEY_PHOTO_ID + "=" + photoDataEntity.photo_id,
+                        PhotoFilesTable.KEY_PHOTO_ID + " = " + photoDataEntity.photo_id,
                         null
                 );
     }
@@ -190,7 +235,24 @@ public class PhotosDbStore implements IPhotoDataStore {
         } else {
             repositoryDbListCallback.onError(new Exception("nothing to delete!"));
         }
-        repositoryDbListCallback.onPhotoDeleted();
+        repositoryDbListCallback.onPhotoDeleted(photoID);
+    }
+
+    /**
+     * Update photo row entity in database
+     *
+     * @param photoDataEntity
+     */
+    public void updatePhotoInDb(PhotoDataEntity photoDataEntity) {
+        if (getPhotoDataEntity(photoDataEntity.photo_id) != null) {
+            try {
+                saveOrUpdatePhoto(photoDataEntity);
+            } catch (Exception e) {
+                repositoryDbListCallback.onError(e.fillInStackTrace());
+            } finally {
+                repositoryDbListCallback.onPhotoUpdated(photoDataEntity);
+            }
+        }
     }
 
     @Override
@@ -206,7 +268,7 @@ public class PhotosDbStore implements IPhotoDataStore {
         if (photoDataRepositoryListCallback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        photoDataRepositoryListCallback.onPhotoDataStored(getPhotoListFromDb());
+        photoDataRepositoryListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
     }
 
     @Override
@@ -215,7 +277,7 @@ public class PhotosDbStore implements IPhotoDataStore {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
         this.repositoryDbListCallback = callback;
-        saveDataToDb(dataEntityList, false);
+        saveDataToDb(dataEntityList);
     }
 
     @Override
@@ -230,17 +292,5 @@ public class PhotosDbStore implements IPhotoDataStore {
     @Override
     public void dispose() {
         subscription.unsubscribe();
-    }
-
-    public void updatePhotoInDb(PhotoDataEntity photoDataEntity) {
-        if (getPhotoDataEntity(photoDataEntity.photo_id) != null) {
-            try {
-                saveOrUpdatePhoto(photoDataEntity);
-            } catch (Exception e) {
-                repositoryDbListCallback.onError(e.fillInStackTrace());
-            } finally {
-                repositoryDbListCallback.onPhotoDataStored(getPhotoListFromDb());
-            }
-        }
     }
 }

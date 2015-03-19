@@ -11,7 +11,7 @@ public class PhotoElement {
     public int isfriend;
 
     public String id;
-    
+
     public int farm;
 
     public int isfamily;

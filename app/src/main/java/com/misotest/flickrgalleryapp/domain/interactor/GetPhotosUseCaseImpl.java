@@ -28,13 +28,18 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         }
 
         @Override
-        public void onPhotoDeleted() {
-            useCaseCallback.onPhotoDeleted();
+        public void onPhotoDeleted(String photoID) {
+            useCaseCallback.onPhotoDeleted(photoID);
         }
 
         @Override
         public void onError(Throwable errorBundle) {
             notifyError(errorBundle);
+        }
+
+        @Override
+        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
+            useCaseCallback.onPhotoUpdated(photoDataEntity);
         }
     };
 
@@ -68,6 +73,9 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         photoDataRepository.deletePhotoFromDevice(photoId, repositoryCallback);
     }
 
+    /**
+     * Stop all operations in repository
+     */
     public void dispose() {
         photoDataRepository.dispose();
     }

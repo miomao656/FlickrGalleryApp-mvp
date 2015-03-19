@@ -4,13 +4,13 @@ import java.util.List;
 
 public class Photos {
 
-	public int perpage;
+    public int perpage;
 
-	public List<PhotoElement> photo;
+    public List<PhotoElement> photo;
 
-	public String total;
+    public String total;
 
-	public int page;
+    public int page;
 
-	public int pages;
+    public int pages;
 }

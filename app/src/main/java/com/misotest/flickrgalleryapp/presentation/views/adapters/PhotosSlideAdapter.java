@@ -25,20 +25,24 @@ import timber.log.Timber;
 
 /**
  * PagerAdapter for displaying a list of photos from PhotoGridFragment
- *
  */
 public class PhotosSlideAdapter extends PagerAdapter {
 
-    private List<PhotoPresentationModel> urls = Collections.emptyList();
+    private List<PhotoPresentationModel> presentationModelList = Collections.emptyList();
 
-    public void addUrls(List<PhotoPresentationModel> urls) {
-        this.urls = urls;
+    /**
+     * Add items to viewpager list
+     *
+     * @param presentationModelList
+     */
+    public void addPhotos(List<PhotoPresentationModel> presentationModelList) {
+        this.presentationModelList = presentationModelList;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return urls.size();
+        return presentationModelList.size();
     }
 
     @Override
@@ -59,11 +63,11 @@ public class PhotosSlideAdapter extends PagerAdapter {
         final View view5 = (View) itemView.findViewById(R.id.five);
         final View view6 = (View) itemView.findViewById(R.id.six);
 
-        final PhotoPresentationModel presentationModel = urls.get(position);
+        final PhotoPresentationModel presentationModel = presentationModelList.get(position);
 
         title.setText(presentationModel.photo_title);
 
-        if (presentationModel.photo_file_path !=null && !presentationModel.photo_file_path.isEmpty()) {
+        if (presentationModel.photo_file_path != null && !presentationModel.photo_file_path.isEmpty()) {
             //loading images using picasso with simple callback to get colors with Palette api
             Picasso.with(container.getContext()).load(new File(presentationModel.photo_file_path)).into(photoView, new Callback() {
                 @Override
@@ -97,7 +101,19 @@ public class PhotosSlideAdapter extends PagerAdapter {
         return itemView;
     }
 
-    private void onPhotoLoaded(ImageView photoView, final View view1, final View view2, final View view3, final View view4, final View view5, final View view6) {
+    /**
+     * Generate colours from image and set to view's
+     *
+     * @param photoView
+     * @param view1
+     * @param view2
+     * @param view3
+     * @param view4
+     * @param view5
+     * @param view6
+     */
+    private void onPhotoLoaded(ImageView photoView, final View view1, final View view2,
+                               final View view3, final View view4, final View view5, final View view6) {
         Bitmap bitmap = ((BitmapDrawable) photoView.getDrawable()).getBitmap();
 
         Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {

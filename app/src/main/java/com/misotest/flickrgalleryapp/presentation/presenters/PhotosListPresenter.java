@@ -30,9 +30,9 @@ public class PhotosListPresenter extends Presenter {
         }
 
         @Override
-        public void onPhotoDeleted() {
+        public void onPhotoDeleted(String photoID) {
             photoGridView.hideLoading();
-            photoGridView.onPhotoDeleted();
+            photoGridView.onPhotoDeleted(photoID);
         }
 
         @Override
@@ -45,6 +45,12 @@ public class PhotosListPresenter extends Presenter {
         public void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList) {
             photoGridView.hideLoading();
             photoGridView.presentPhotosUpdated(mapper.transform(photoDataEntityList));
+        }
+
+        @Override
+        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
+            photoGridView.hideLoading();
+            photoGridView.updatePhotoInList(mapper.transform(photoDataEntity));
         }
     };
 
@@ -90,7 +96,7 @@ public class PhotosListPresenter extends Presenter {
      *
      * @param photoId
      */
-    public void deletePhoto(String photoId){
+    public void deletePhoto(String photoId) {
         photoGridView.showLoading();
         getPhotosUseCase.deletePhoto(photoId, useCaseUseCaseCallback);
     }

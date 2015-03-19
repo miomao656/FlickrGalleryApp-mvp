@@ -8,11 +8,10 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
+import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosSlideAdapter;
@@ -22,20 +21,21 @@ import java.util.List;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class PhotoPagerFragment extends Fragment implements View.OnClickListener, PhotoGridView{
+public class PhotoPagerFragment extends Fragment implements View.OnClickListener, PhotoGridView {
 
-    private static final String POSITION = "position";
     public static final String TAG = PhotoPagerFragment.class.getSimpleName();
-
+    private static final String POSITION = "position";
     @InjectView(R.id.pager)
     ViewPager mPager;
-    @InjectView(R.id.toolbar)
-    RelativeLayout mToolbar;
 
     private int position;
 
     private PhotosSlideAdapter mPhotosSlideAdapter;
     private PhotosListPresenter mPhotoListPresenter;
+
+    public PhotoPagerFragment() {
+        // Required empty public constructor
+    }
 
     public static PhotoPagerFragment newInstance(int position) {
         PhotoPagerFragment fragment = new PhotoPagerFragment();
@@ -43,10 +43,6 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         args.putInt(POSITION, position);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public PhotoPagerFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -98,7 +94,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     @Override
     public void presentPhotos(List<PhotoPresentationModel> itemDomainEntityList) {
         if (mPhotosSlideAdapter != null && mPager != null) {
-            mPhotosSlideAdapter.addUrls(itemDomainEntityList);
+            mPhotosSlideAdapter.addPhotos(itemDomainEntityList);
             mPager.setCurrentItem(position);
         }
     }
@@ -106,7 +102,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     @Override
     public void presentPhotosUpdated(List<PhotoPresentationModel> itemDomainEntityList) {
         if (mPhotosSlideAdapter != null && mPager != null) {
-            mPhotosSlideAdapter.addUrls(itemDomainEntityList);
+            mPhotosSlideAdapter.addPhotos(itemDomainEntityList);
             mPager.setCurrentItem(position);
         }
     }
@@ -122,12 +118,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public void onPhotoDeleted() {
-
-    }
-
-    @Override
-    public void onPhotoUpdated(PhotoPresentationModel presentationModel) {
+    public void onPhotoDeleted(String photoID) {
 
     }
 
@@ -138,6 +129,11 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void hideError() {
+
+    }
+
+    @Override
+    public void updatePhotoInList(PhotoPresentationModel transform) {
 
     }
 

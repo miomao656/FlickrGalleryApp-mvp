@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * Class for initializing database creation and migration operations
- *
  */
 public class DatabaseHandler extends SQLiteOpenHelper {
 

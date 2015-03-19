@@ -2,11 +2,11 @@ package com.misotest.flickrgalleryapp.data.entity;
 
 public class PhotoEntity {
 
-	public String id;
+    public String id;
 
-	public String title;
+    public String title;
 
-	public Sizes sizes;
+    public Sizes sizes;
 
-	public String stat;
+    public String stat;
 }

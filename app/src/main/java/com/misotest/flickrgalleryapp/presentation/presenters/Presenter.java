@@ -15,5 +15,5 @@ public abstract class Presenter {
      * Called when the presenter is unregister, i.e when an activity
      * or a fragment finishes
      */
-    public abstract void stop ();
+    public abstract void stop();
 }

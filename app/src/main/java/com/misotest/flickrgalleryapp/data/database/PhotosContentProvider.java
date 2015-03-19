@@ -20,21 +20,17 @@ import java.util.HashSet;
  */
 public class PhotosContentProvider extends ContentProvider {
 
-    // database
-    private DatabaseHandler database;
-
+    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/photos";
+    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/photo";
+    public static final String[] PROJECTION = {PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE,
+            PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
     // used for the urimatcher
     private static final int DATA = 10;
     private static final int DATA_ID = 20;
-
     private static final String AUTHORITY = "com.misotest.flickrgalleryapp.photosprovider";
     private static final String BASE_PATH = "photos";
     private static final String URL = "content://" + AUTHORITY + "/" + BASE_PATH;
-
-
     public static final Uri CONTENT_URI = Uri.parse(URL);
-    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/photos";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/photo";
     private static final UriMatcher sURIMatcher;
 
     static {
@@ -43,8 +39,8 @@ public class PhotosContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", DATA_ID);
     }
 
-    public static final String[] PROJECTION = {PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE,
-            PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
+    // database
+    private DatabaseHandler database;
 
     @Override
     public boolean onCreate() {
@@ -104,7 +100,13 @@ public class PhotosContentProvider extends ContentProvider {
         return Uri.parse(BASE_PATH + "/" + id);
     }
 
-
+    /**
+     * Bulk insert data to database and ignore existing rows matching
+     *
+     * @param uri
+     * @param values
+     * @return
+     */
     public int bulkInsert(Uri uri, ContentValues[] values) {
         int numInserted = 0;
         String table = null;
@@ -121,7 +123,7 @@ public class PhotosContentProvider extends ContentProvider {
         try {
             //standard SQL insert statement, that can be reused
             SQLiteStatement insert =
-                    sqlDB.compileStatement("insert or replace into " + table
+                    sqlDB.compileStatement("insert or ignore into " + table
                             + "(" +
                             PhotoFilesTable.KEY_PHOTO_ID + "," +
                             PhotoFilesTable.KEY_PHOTO_TITLE + "," +
@@ -193,6 +195,11 @@ public class PhotosContentProvider extends ContentProvider {
         return rowsUpdated;
     }
 
+    /**
+     * Check for columns in database
+     *
+     * @param projection
+     */
     private void checkColumns(String[] projection) {
         String[] available = {PhotoFilesTable.KEY_PHOTO_ID, PhotoFilesTable.KEY_PHOTO_TITLE, PhotoFilesTable.KEY_PHOTO_URL, PhotoFilesTable.KEY_PHOTO_PATH};
         if (projection != null) {
