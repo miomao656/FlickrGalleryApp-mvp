@@ -17,6 +17,8 @@ public interface IPhotosRepository {
     interface PhotoListCallback {
         void onPhotoListLoaded(List<PhotoDataEntity> photoCollection);
 
+        void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList);
+
         void onPhotoDeleted();
 
         void onError(Throwable errorBundle);
@@ -27,5 +29,5 @@ public interface IPhotosRepository {
      *
      * @param photoListCallback A {@link PhotoListCallback} used for notifying clients.
      */
-    void getPhotoList(int page, String query,PhotoListCallback photoListCallback);
+    void getPhotoList(int page, String query, boolean isOnline, PhotoListCallback photoListCallback);
 }

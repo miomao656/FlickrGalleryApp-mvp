@@ -19,7 +19,12 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
     private IPhotosRepository.PhotoListCallback repositoryCallback = new IPhotosRepository.PhotoListCallback() {
         @Override
         public void onPhotoListLoaded(List<PhotoDataEntity> photoCollection) {
-            notifyGetUserListSuccessfully(photoCollection);
+            notifyGetPhotoListSuccessfully(photoCollection);
+        }
+
+        @Override
+        public void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList) {
+            useCaseCallback.onPhotoListUpdated(photoDataEntityList);
         }
 
         @Override
@@ -36,7 +41,7 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
     public GetPhotosUseCaseImpl() {
     }
 
-    private void notifyGetUserListSuccessfully(final List<PhotoDataEntity> photoDataEntityList) {
+    private void notifyGetPhotoListSuccessfully(final List<PhotoDataEntity> photoDataEntityList) {
         useCaseCallback.onPhotoListLoaded(photoDataEntityList);
     }
 
@@ -45,12 +50,12 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
     }
 
     @Override
-    public void requestPhotos(int page, String query, UseCaseCallback useCaseCallback) {
+    public void requestPhotos(int page, String query, boolean isOnline, UseCaseCallback useCaseCallback) {
         if (useCaseCallback == null) {
             throw new IllegalArgumentException("Interactor useCaseCallback cannot be null!!!");
         }
         this.useCaseCallback = useCaseCallback;
-        photoDataRepository.getPhotoList(page, query, repositoryCallback);
+        photoDataRepository.getPhotoList(page, query, isOnline, repositoryCallback);
     }
 
     @Override
@@ -58,8 +63,12 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         if (useCaseCallback == null) {
             throw new IllegalArgumentException("Interactor useCaseCallback cannot be null!!!");
         } else {
-            this.useCaseCallback = useCaseCallback;
+            this.useCaseCallback = useCaseUseCaseCallback;
         }
         photoDataRepository.deletePhotoFromDevice(photoId, repositoryCallback);
+    }
+
+    public void dispose() {
+        photoDataRepository.dispose();
     }
 }

@@ -104,6 +104,14 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
+    public void presentPhotosUpdated(List<PhotoPresentationModel> itemDomainEntityList) {
+        if (mPhotosSlideAdapter != null && mPager != null) {
+            mPhotosSlideAdapter.addUrls(itemDomainEntityList);
+            mPager.setCurrentItem(position);
+        }
+    }
+
+    @Override
     public void showLoading() {
 
     }

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface IGetPhotosUseCase {
 
-    void requestPhotos(int page, String query, UseCaseCallback useCaseCallback);
+    void requestPhotos(int page, String query, boolean isOnline, UseCaseCallback useCaseCallback);
 
     void deletePhoto(String photoId, UseCaseCallback useCaseUseCaseCallback);
 
@@ -24,5 +24,7 @@ public interface IGetPhotosUseCase {
         void onPhotoDeleted();
 
         void onError(Throwable errorBundle);
+
+        void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList);
     }
 }

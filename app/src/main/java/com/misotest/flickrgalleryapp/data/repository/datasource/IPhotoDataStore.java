@@ -12,7 +12,12 @@ public interface IPhotoDataStore {
     /**
      * Get a collection of {@link PhotoDataEntity}.
      */
-    void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback callback);
+    void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback);
+
+    /**
+     * Get a collection of {@link PhotoDataEntity}.
+     */
+    void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback);
 
     /**
      * Save a collection of {@link PhotoDataEntity}.
@@ -63,6 +68,8 @@ public interface IPhotoDataStore {
     interface PhotoDataRepositoryListCallback {
         void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities);
 
+        void onPhotoDownloaded(PhotoDataEntity photoDataEntity);
+
         void onError(Throwable exception);
     }
 
@@ -77,4 +84,9 @@ public interface IPhotoDataStore {
 
         void onError(Throwable exception);
     }
+
+    /**
+     * Cancel all runing operations
+     */
+    void dispose();
 }

@@ -13,16 +13,16 @@ import java.util.List;
  */
 public class PhotoDataRepository implements IPhotosRepository {
 
-    final PhotoCloudStore photoCloudStore = new PhotoCloudStore();
-    final PhotosDbStore photosDbStore = new PhotosDbStore();
+    private PhotoCloudStore photoCloudStore = new PhotoCloudStore();
 
-    PhotoListCallback photoListCallback;
+    private PhotosDbStore photosDbStore = new PhotosDbStore();
 
-    IPhotoDataStore.PhotoDataRepositoryDbListCallback dbListCallback = new IPhotoDataStore.PhotoDataRepositoryDbListCallback() {
+    private PhotoListCallback photoListCallback;
 
+    private IPhotoDataStore.PhotoDataRepositoryDbListCallback dbListCallback = new IPhotoDataStore.PhotoDataRepositoryDbListCallback() {
         @Override
         public void onPhotoDataStored(List<PhotoDataEntity> photoDataEntities) {
-            photoListCallback.onPhotoListLoaded(photoDataEntities);
+            photoListCallback.onPhotoListUpdated(photoDataEntities);
         }
 
         @Override
@@ -36,7 +36,7 @@ public class PhotoDataRepository implements IPhotosRepository {
         }
     };
 
-    IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
+    private IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
             photosDbStore.savePhotoEntityList(photoDataEntities,
@@ -60,8 +60,13 @@ public class PhotoDataRepository implements IPhotosRepository {
         }
 
         @Override
-        public void onError(Throwable exception) {
+        public void onPhotoDownloaded(PhotoDataEntity photoDataEntity) {
+            photosDbStore.updatePhotoInDb(photoDataEntity);
+        }
 
+        @Override
+        public void onError(Throwable exception) {
+            photoListCallback.onError(exception);
         }
     };
 
@@ -77,12 +82,20 @@ public class PhotoDataRepository implements IPhotosRepository {
     }
 
     @Override
-    public void getPhotoList(int page, String query, final PhotoListCallback photoListCallback) {
+    public void getPhotoList(int page, String query, boolean isOnline, final PhotoListCallback photoListCallback) {
         //we always get all users from the cloud
         if (photoListCallback == null) {
             throw new IllegalArgumentException("Callback cannot be null!!!");
         }
         this.photoListCallback = photoListCallback;
-        photoCloudStore.getPhotoEntityList(page, query, listCallback);
+        if (isOnline) {
+            photoCloudStore.getPhotoEntityList(page, query, listCallback);
+        }
+        photosDbStore.getPhotoEntityList(page, query, dbListCallback);
+    }
+
+    public void dispose() {
+        photosDbStore.dispose();
+        photoCloudStore.dispose();
     }
 }

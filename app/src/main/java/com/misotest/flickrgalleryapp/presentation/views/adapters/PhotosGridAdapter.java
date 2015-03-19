@@ -26,7 +26,7 @@ import butterknife.InjectView;
  */
 public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.ViewHolder> {
 
-    private List<PhotoPresentationModel> itemDomainEntityList = new LinkedList<>();
+    private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
 
     private GridActions mGridActions;
 
@@ -37,24 +37,32 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
      */
     public void addPhotos(List<PhotoPresentationModel> presentationModels, boolean isPaging) {
         if (isPaging) {
-            int position = itemDomainEntityList.size();
+            int position = presentationModelList.size();
             for (PhotoPresentationModel element : presentationModels) {
-                itemDomainEntityList.add(element);
+                presentationModelList.add(element);
             }
             notifyItemRangeChanged(position, presentationModels.size() - 1);
         } else {
-            itemDomainEntityList.clear();
+            presentationModelList.clear();
             for (PhotoPresentationModel element : presentationModels) {
-                itemDomainEntityList.add(element);
+                presentationModelList.add(element);
             }
             notifyDataSetChanged();
         }
     }
 
+    public void updatePhotos(List<PhotoPresentationModel> presentationModels) {
+        presentationModelList.clear();
+        for (PhotoPresentationModel model : presentationModels) {
+            presentationModelList.add(model);
+        }
+        notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
+    }
+
     public void removePhoto(int position) {
-        itemDomainEntityList.remove(position);
+        presentationModelList.remove(position);
         notifyItemRemoved(position);
-        notifyItemRangeChanged(position, itemDomainEntityList.size() - 1);
+        notifyItemRangeChanged(position, presentationModelList.size() - 1);
     }
 
     /**
@@ -74,7 +82,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
-        final PhotoPresentationModel itemDomainEntity = itemDomainEntityList.get(position);
+        final PhotoPresentationModel itemDomainEntity = presentationModelList.get(position);
         if (itemDomainEntity.photo_file_path != null && !itemDomainEntity.photo_file_path.equals("")) {
             Picasso.with(viewHolder.mItemImage.getContext())
                     .load(new File(itemDomainEntity.photo_file_path))
@@ -172,7 +180,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
 
     @Override
     public int getItemCount() {
-        return itemDomainEntityList.size();
+        return presentationModelList.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

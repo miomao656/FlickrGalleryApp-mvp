@@ -8,6 +8,8 @@ public interface PhotoGridView extends BaseView {
 
     void presentPhotos(List<PhotoPresentationModel> itemDomainEntityList);
 
+    void presentPhotosUpdated(List<PhotoPresentationModel> itemDomainEntityList);
+
     void showLoading();
 
     void hideLoading();

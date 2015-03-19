@@ -118,13 +118,13 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(List<PhotoDataEntity> photoDataEntityList) {
                                         photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
+                                        downloadPhotos(photoDataEntityList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        throwable.printStackTrace();
-//                                        photoDataRepositoryListCallback.onError();
+                                        photoDataRepositoryListCallback.onError(throwable);
                                     }
                                 }
                         )
@@ -134,10 +134,15 @@ public class PhotoCloudStore implements IPhotoDataStore {
     @Override
     public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback) {
         if (photoDataRepositoryListCallback == null) {
-            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+            throw new IllegalArgumentException("Callback cannot be null!!!");
         }
         this.photoDataRepositoryListCallback = photoDataRepositoryListCallback;
         getPhotos(page, query);
+    }
+
+    @Override
+    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback) {
+
     }
 
     @Override
@@ -148,6 +153,11 @@ public class PhotoCloudStore implements IPhotoDataStore {
     @Override
     public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
         //delete photo from server
+    }
+
+    @Override
+    public void dispose() {
+        subscription.unsubscribe();
     }
 
     /**
@@ -192,14 +202,13 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 new Action1<List<PhotoDataEntity>>() {
                                     @Override
                                     public void call(List<PhotoDataEntity> uriList) {
-//                                        sendPhotosToPresenter(uriList);
+                                        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(uriList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        throwable.printStackTrace();
-//                                        photoDataRepositoryListCallback.onError();
+                                        photoDataRepositoryListCallback.onError(throwable);
                                     }
                                 }
                         )

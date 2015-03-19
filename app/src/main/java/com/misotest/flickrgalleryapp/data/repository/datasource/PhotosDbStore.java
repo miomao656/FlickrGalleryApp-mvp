@@ -11,11 +11,9 @@ import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
 import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
 import com.misotest.flickrgalleryapp.data.datautils.FileUtils;
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import rx.Observable;
@@ -57,37 +55,6 @@ public class PhotosDbStore implements IPhotoDataStore {
                             cursor.getString(2),
                             cursor.getString(3)
                     ));
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        }
-        return urls;
-    }
-
-    /**
-     * Get a list of PhotoPresentationModel from database
-     *
-     * @return
-     */
-    private List<PhotoPresentationModel> getUriPresentationListFromDb() {
-        List<PhotoPresentationModel> urls = Collections.emptyList();
-        ContentResolver resolver = MainApplication.getContext().getContentResolver();
-        Cursor cursor =
-                resolver.query(PhotosContentProvider.CONTENT_URI,
-                        PhotosContentProvider.PROJECTION,
-                        null,
-                        null,
-                        null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                urls = new ArrayList<PhotoPresentationModel>(cursor.getCount());
-                do {
-                    urls.add(new PhotoPresentationModel(cursor.getString(0),
-                                    cursor.getString(1),
-                                    cursor.getString(2),
-                                    cursor.getString(3)
-                            )
-                    );
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -189,7 +156,7 @@ public class PhotosDbStore implements IPhotoDataStore {
      * @param photoDataEntity
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private void saveOrUpdatePhoto(PhotoDataEntity photoDataEntity) {
+    private synchronized void saveOrUpdatePhoto(PhotoDataEntity photoDataEntity) {
         ContentValues values = new ContentValues();
         values.put(PhotoFilesTable.KEY_PHOTO_ID, photoDataEntity.photo_id);
         values.put(PhotoFilesTable.KEY_PHOTO_TITLE, photoDataEntity.photo_title);
@@ -227,14 +194,25 @@ public class PhotosDbStore implements IPhotoDataStore {
     }
 
     @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback callback) {
+    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback) {
+        if (photoDataRepositoryListCallback == null) {
+            throw new IllegalArgumentException("callback cannot be null!!!");
+        }
+        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(getPhotoListFromDb());
+    }
 
+    @Override
+    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback) {
+        if (photoDataRepositoryListCallback == null) {
+            throw new IllegalArgumentException("callback cannot be null!!!");
+        }
+        photoDataRepositoryListCallback.onPhotoDataStored(getPhotoListFromDb());
     }
 
     @Override
     public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+            throw new IllegalArgumentException("callback cannot be null!!!");
         }
         this.repositoryDbListCallback = callback;
         saveDataToDb(dataEntityList, false);
@@ -243,9 +221,26 @@ public class PhotosDbStore implements IPhotoDataStore {
     @Override
     public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
         if (photoDataRepositoryDbListCallback == null) {
-            throw new IllegalArgumentException("Interactor callback cannot be null!!!");
+            throw new IllegalArgumentException("callback cannot be null!!!");
         }
         this.repositoryDbListCallback = photoDataRepositoryDbListCallback;
         deletePhotoFromDb(photoId);
+    }
+
+    @Override
+    public void dispose() {
+        subscription.unsubscribe();
+    }
+
+    public void updatePhotoInDb(PhotoDataEntity photoDataEntity) {
+        if (getPhotoDataEntity(photoDataEntity.photo_id) != null) {
+            try {
+                saveOrUpdatePhoto(photoDataEntity);
+            } catch (Exception e) {
+                repositoryDbListCallback.onError(e.fillInStackTrace());
+            } finally {
+                repositoryDbListCallback.onPhotoDataStored(getPhotoListFromDb());
+            }
+        }
     }
 }

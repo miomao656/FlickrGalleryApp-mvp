@@ -6,6 +6,7 @@ import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
+import com.misotest.flickrgalleryapp.presentation.utils.ConnectionUtils;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class PhotosListPresenter extends Presenter {
 
         @Override
         public void onPhotoDeleted() {
+            photoGridView.hideLoading();
             photoGridView.onPhotoDeleted();
         }
 
@@ -37,6 +39,12 @@ public class PhotosListPresenter extends Presenter {
         public void onError(Throwable errorBundle) {
             photoGridView.hideLoading();
             photoGridView.showError(errorBundle.toString());
+        }
+
+        @Override
+        public void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList) {
+            photoGridView.hideLoading();
+            photoGridView.presentPhotosUpdated(mapper.transform(photoDataEntityList));
         }
     };
 
@@ -57,7 +65,7 @@ public class PhotosListPresenter extends Presenter {
 
     @Override
     public void stop() {
-
+        getPhotosUseCase.dispose();
     }
 
     private void showPhotoListInView(List<PhotoDataEntity> usersCollection) {
@@ -73,7 +81,8 @@ public class PhotosListPresenter extends Presenter {
      * @param query
      */
     public void getPage(int page, String query) {
-        getPhotosUseCase.requestPhotos(page, query, useCaseUseCaseCallback);
+        getPhotosUseCase.requestPhotos(page, query,
+                ConnectionUtils.isNetworkAvailable(photoGridView.getContext()), useCaseUseCaseCallback);
     }
 
     /**
@@ -82,6 +91,7 @@ public class PhotosListPresenter extends Presenter {
      * @param photoId
      */
     public void deletePhoto(String photoId){
+        photoGridView.showLoading();
         getPhotosUseCase.deletePhoto(photoId, useCaseUseCaseCallback);
     }
 }

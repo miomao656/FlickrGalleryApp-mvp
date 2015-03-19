@@ -109,6 +109,13 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
+    public void presentPhotosUpdated(List<PhotoPresentationModel> itemDomainEntityList) {
+        if (itemDomainEntityList != null && !itemDomainEntityList.isEmpty()) {
+            mItemListAdapter.updatePhotos(itemDomainEntityList);
+        }
+    }
+
+    @Override
     public void showLoading() {
         mProgressBar.setVisibility(View.VISIBLE);
     }
