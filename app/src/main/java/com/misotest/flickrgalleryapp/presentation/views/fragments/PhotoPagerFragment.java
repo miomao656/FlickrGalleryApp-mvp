@@ -8,6 +8,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.misotest.flickrgalleryapp.R;
 import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
@@ -27,6 +28,8 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     private static final String POSITION = "position";
     @InjectView(R.id.pager)
     ViewPager mPager;
+    @InjectView(R.id.progress_bar)
+    ProgressBar mProgressBar;
 
     private int position;
 
@@ -109,12 +112,14 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void showLoading() {
-
+        mProgressBar.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-
+        if (mProgressBar != null) {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 
     @Override

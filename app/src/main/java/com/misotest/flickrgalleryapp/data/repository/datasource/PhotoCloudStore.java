@@ -10,6 +10,7 @@ import com.misotest.flickrgalleryapp.data.rest.photosApi.PhotosApi;
 
 import java.util.List;
 
+import retrofit.RetrofitError;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -72,7 +73,16 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-                                        photoRestRepoCallback.onError(throwable);
+                                        if (throwable instanceof RetrofitError) {
+                                            if (((RetrofitError) throwable).isNetworkError()) {
+                                                //handle network error
+                                            } else {
+                                                //handle error message from server
+                                            }
+                                            photoRestRepoCallback.onPhotoDataEntityListLoaded(null);
+                                        } else {
+                                            photoRestRepoCallback.onError(throwable);
+                                        }
                                     }
                                 }
                         )
@@ -125,7 +135,16 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-                                        photoRestRepoCallback.onError(throwable);
+                                        if (throwable instanceof RetrofitError) {
+                                            if (((RetrofitError) throwable).isNetworkError()) {
+                                                //handle network error
+                                            } else {
+                                                //handle error message from server
+                                            }
+                                            photoRestRepoCallback.onPhotoDataEntityListLoaded(null);
+                                        } else {
+                                            photoRestRepoCallback.onError(throwable);
+                                        }
                                     }
                                 }
                         )
@@ -198,12 +217,6 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                         callback.onPhotosDownloaded(photoDataEntityList);
                                     }
                                 },
-//                                new Action1<PhotoDataEntity>() {
-//                                    @Override
-//                                    public void call(PhotoDataEntity entity) {
-//                                        callback.onPhotoDownloaded(entity);
-//                                    }
-//                                },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
