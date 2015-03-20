@@ -42,7 +42,7 @@ public class PhotosDbStore implements IPhotoDataStore {
     private PhotoRestRepoCallback listCallback = new PhotoRestRepoCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
-
+            repositoryDbListCallback.onPhotoDbDataSaved(photoDataEntities);
         }
 
         @Override

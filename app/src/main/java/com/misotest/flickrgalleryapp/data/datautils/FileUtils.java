@@ -95,16 +95,16 @@ public class FileUtils {
         String[] pathContents = extUrl.split("[\\\\/]");
         if (pathContents != null) {
             int pathContentsLength = pathContents.length;
-            System.out.println("Path Contents Length: " + pathContentsLength);
-            for (int i = 0; i < pathContents.length; i++) {
-                System.out.println("Path " + i + ": " + pathContents[i]);
-            }
+//            System.out.println("Path Contents Length: " + pathContentsLength);
+//            for (int i = 0; i < pathContents.length; i++) {
+//                System.out.println("Path " + i + ": " + pathContents[i]);
+//            }
             //lastPart: s659629384_752969_4472.jpg
             String lastPart = pathContents[pathContentsLength - 1];
             String[] lastPartContents = lastPart.split("\\.");
             if (lastPartContents != null && lastPartContents.length > 1) {
                 int lastPartContentLength = lastPartContents.length;
-                System.out.println("Last Part Length: " + lastPartContentLength);
+//                System.out.println("Last Part Length: " + lastPartContentLength);
                 //filenames can contain . , so we assume everything before
                 //the last . is the name, everything after the last . is the
                 //extension

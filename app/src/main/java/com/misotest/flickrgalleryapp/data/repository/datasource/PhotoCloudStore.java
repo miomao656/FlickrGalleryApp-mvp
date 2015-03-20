@@ -12,6 +12,7 @@ import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -187,20 +188,33 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 );
                             }
                         })
+                        .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                new Action1<PhotoDataEntity>() {
+                                new Action1<List<PhotoDataEntity>>() {
                                     @Override
-                                    public void call(PhotoDataEntity entity) {
-                                        callback.onPhotoDownloaded(entity);
+                                    public void call(List<PhotoDataEntity> photoDataEntityList) {
+                                        callback.onPhotoDataEntityListLoaded(photoDataEntityList);
                                     }
                                 },
+//                                new Action1<PhotoDataEntity>() {
+//                                    @Override
+//                                    public void call(PhotoDataEntity entity) {
+//                                        callback.onPhotoDownloaded(entity);
+//                                    }
+//                                },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
                                         callback.onError(throwable);
+                                    }
+                                },
+                                new Action0() {
+                                    @Override
+                                    public void call() {
+
                                     }
                                 }
                         )
