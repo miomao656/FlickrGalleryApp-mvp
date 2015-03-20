@@ -16,6 +16,9 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
 
     private UseCaseCallback useCaseCallback;
 
+    public GetPhotosUseCaseImpl() {
+    }
+
     private IPhotosRepository.PhotoListCallback repositoryCallback = new IPhotosRepository.PhotoListCallback() {
         @Override
         public void onPhotoListLoaded(List<PhotoDataEntity> photoCollection) {
@@ -42,9 +45,6 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
             useCaseCallback.onPhotoUpdated(photoDataEntity);
         }
     };
-
-    public GetPhotosUseCaseImpl() {
-    }
 
     private void notifyGetPhotoListSuccessfully(final List<PhotoDataEntity> photoDataEntityList) {
         useCaseCallback.onPhotoListLoaded(photoDataEntityList);

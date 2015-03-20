@@ -128,11 +128,6 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public void hideError() {
-
-    }
-
-    @Override
     public void updatePhotoInList(PhotoPresentationModel transform) {
 
     }

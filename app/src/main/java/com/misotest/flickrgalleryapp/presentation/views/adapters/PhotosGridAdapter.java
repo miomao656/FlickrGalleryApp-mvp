@@ -22,7 +22,6 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import timber.log.Timber;
 
 /**
  * Adapter for showing photos in grid list view
@@ -30,7 +29,6 @@ import timber.log.Timber;
 public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.ViewHolder> {
 
     private static final long NOTIFY_DELAY = 500;
-
 
     private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
     private ViewHolder.GridActions mGridActions;
@@ -106,7 +104,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
                     .noFade()
                     .into(viewHolder.mItemImage, callback(viewHolder));
         }
-
     }
 
     /**
@@ -158,9 +155,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
      */
     public void updatePhoto(PhotoPresentationModel presentationModel) {
         PhotoPresentationModel photoPresentationModel = null;
-//        for (int i = 0; i < presentationModelList.size() - 1; i++) {
-//            if (presentationModelList.get(i))
-//        }
         for (PhotoPresentationModel model : presentationModelList) {
             if (model.photo_id.equals(presentationModel.photo_id)) {
                 model.photo_file_path = presentationModel.photo_file_path;
@@ -251,7 +245,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             //todo get the positon for drawing the circle
-            Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
+//            Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
 //                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
 //                    handler.postDelayed(mLongPressed, 1000);
 //                }
@@ -266,9 +260,9 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
          */
         public interface GridActions {
 
-            public void onPhotoClick(int position);
+            void onPhotoClick(int position);
 
-            public boolean onPhotoLongClicked(int position);
+            boolean onPhotoLongClicked(int position);
         }
     }
 }

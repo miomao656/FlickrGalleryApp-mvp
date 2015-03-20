@@ -42,14 +42,15 @@ public class PhotosDbStore implements IPhotoDataStore {
     private PhotoRestRepoCallback listCallback = new PhotoRestRepoCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
-            saveDataToDb(photoDataEntities);
+            if (photoDataEntities != null && !photoDataEntities.isEmpty()) {
+                saveDataToDb(photoDataEntities);
+            } else {
+                repositoryDbListCallback.onPhotoListRetrieved(getPhotoListFromDb());
+            }
         }
 
         @Override
         public void onPhotosDownloaded(List<PhotoDataEntity> photoDataEntities) {
-//            for (PhotoDataEntity entity: photoDataEntities){
-//                updatePhotoInDb(entity);
-//            }
             Observable.from(photoDataEntities)
                     .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                         @Override
@@ -293,13 +294,14 @@ public class PhotosDbStore implements IPhotoDataStore {
     /**
      * On app start retrieve data to present if any in db
      *
-     * @param callback
+     * @param repositoryDbListCallback
      */
-    public void getPhotosToPresent(int page, String query, PhotoDBRepoCallback callback) {
-        if (callback == null) {
+    public void getPhotosToPresent(int page, String query, PhotoDBRepoCallback repositoryDbListCallback) {
+        if (repositoryDbListCallback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        repositoryDbListCallback = callback;
+        this.repositoryDbListCallback = repositoryDbListCallback;
+
 //        callback.onPhotoListRetrieved(getPhotoListFromDb());
         cloudStore.getPhotoEntityList(page, query, listCallback);
     }
@@ -309,20 +311,20 @@ public class PhotosDbStore implements IPhotoDataStore {
     }
 
     @Override
-    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDBRepoCallback callback) {
-        if (callback == null) {
+    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDBRepoCallback repositoryDbListCallback) {
+        if (repositoryDbListCallback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        this.repositoryDbListCallback = callback;
+        this.repositoryDbListCallback = repositoryDbListCallback;
         saveDataToDb(dataEntityList);
     }
 
     @Override
-    public void deletePhotoFromDb(String photoId, PhotoDBRepoCallback photoDBRepoCallback) {
-        if (photoDBRepoCallback == null) {
+    public void deletePhotoFromDb(String photoId, PhotoDBRepoCallback repositoryDbListCallback) {
+        if (repositoryDbListCallback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        this.repositoryDbListCallback = photoDBRepoCallback;
+        this.repositoryDbListCallback = repositoryDbListCallback;
         deletePhotoFromDb(photoId);
     }
 

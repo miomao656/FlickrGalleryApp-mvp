@@ -188,22 +188,22 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 );
                             }
                         })
-//                        .toList()
+                        .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-//                                new Action1<List<PhotoDataEntity>>() {
-//                                    @Override
-//                                    public void call(List<PhotoDataEntity> photoDataEntityList) {
-//                                        callback.onPhotosDownloaded(photoDataEntityList);
-//                                    }
-//                                },
-                                new Action1<PhotoDataEntity>() {
+                                new Action1<List<PhotoDataEntity>>() {
                                     @Override
-                                    public void call(PhotoDataEntity entity) {
-                                        callback.onPhotoDownloaded(entity);
+                                    public void call(List<PhotoDataEntity> photoDataEntityList) {
+                                        callback.onPhotosDownloaded(photoDataEntityList);
                                     }
                                 },
+//                                new Action1<PhotoDataEntity>() {
+//                                    @Override
+//                                    public void call(PhotoDataEntity entity) {
+//                                        callback.onPhotoDownloaded(entity);
+//                                    }
+//                                },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {

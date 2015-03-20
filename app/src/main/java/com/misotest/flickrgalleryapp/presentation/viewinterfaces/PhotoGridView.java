@@ -18,7 +18,5 @@ public interface PhotoGridView extends BaseView {
 
     void showError(String error);
 
-    void hideError();
-
     void updatePhotoInList(PhotoPresentationModel transform);
 }

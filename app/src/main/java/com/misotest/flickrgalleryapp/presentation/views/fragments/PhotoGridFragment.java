@@ -172,11 +172,6 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
-    public void hideError() {
-
-    }
-
-    @Override
     public void updatePhotoInList(PhotoPresentationModel presentationModel) {
         if (presentationModel != null) {
             mItemListAdapter.updatePhoto(presentationModel);

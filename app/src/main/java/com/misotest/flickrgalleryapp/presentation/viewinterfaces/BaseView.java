@@ -7,5 +7,5 @@ import android.content.Context;
  */
 public interface BaseView {
 
-    public Context getContext();
+    Context getContext();
 }
