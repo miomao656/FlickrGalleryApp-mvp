@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.misotest.flickrgalleryapp.R;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
@@ -111,8 +110,8 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     private boolean showPhotoMenu(final int position) {
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-        alertDialog.setTitle("Photo menu");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Delete",
+        alertDialog.setTitle(getActivity().getResources().getString(R.string.photo_menu));
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getActivity().getResources().getString(R.string.delete),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         mItemListAdapter.removeItem(position);
@@ -120,7 +119,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
                         dialog.dismiss();
                     }
                 });
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Share",
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getActivity().getResources().getString(R.string.share),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
@@ -151,7 +150,9 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void showLoading() {
-        mProgressBar.setVisibility(View.VISIBLE);
+        if (mProgressBar != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -168,7 +169,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void showError(String error) {
-        Toast.makeText(getContext(), "Something went wrong!", Toast.LENGTH_SHORT).show();
+        Timber.e(error);
     }
 
     @Override

@@ -8,4 +8,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="action_back">Back</string>
     <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="photo_menu">Photo menu</string>
 </resources>

@@ -21,6 +21,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import timber.log.Timber;
 
 public class PhotoPagerFragment extends Fragment implements View.OnClickListener, PhotoGridView {
 
@@ -112,7 +113,9 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void showLoading() {
-        mProgressBar.setVisibility(View.VISIBLE);
+        if (mProgressBar != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -129,7 +132,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void showError(String error) {
-
+        Timber.e(error);
     }
 
     @Override
