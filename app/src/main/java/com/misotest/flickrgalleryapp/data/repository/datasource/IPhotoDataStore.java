@@ -36,7 +36,7 @@ public interface IPhotoDataStore {
     /**
      * Flickr rest api number of responses per page
      */
-    static final int PHOTO_PER_PAGE = 50;
+    static final int PHOTO_PER_PAGE = 30;
 
     /**
      * Get a collection of {@link PhotoDataEntity}.
@@ -61,6 +61,8 @@ public interface IPhotoDataStore {
      */
     interface PhotoRestRepoCallback {
         void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities);
+
+        void onPhotosDownloaded(List<PhotoDataEntity> photoDataEntities);
 
         void onPhotoDownloaded(PhotoDataEntity photoDataEntity);
 

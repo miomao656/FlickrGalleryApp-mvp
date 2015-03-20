@@ -42,7 +42,41 @@ public class PhotosDbStore implements IPhotoDataStore {
     private PhotoRestRepoCallback listCallback = new PhotoRestRepoCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
-            repositoryDbListCallback.onPhotoDbDataSaved(photoDataEntities);
+            saveDataToDb(photoDataEntities);
+        }
+
+        @Override
+        public void onPhotosDownloaded(List<PhotoDataEntity> photoDataEntities) {
+//            for (PhotoDataEntity entity: photoDataEntities){
+//                updatePhotoInDb(entity);
+//            }
+            Observable.from(photoDataEntities)
+                    .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
+                        @Override
+                        public Observable<PhotoDataEntity> call(PhotoDataEntity photoDataEntity) {
+                            return Observable.just(photoDataEntity);
+                        }
+                    })
+                    .subscribe(
+                            new Action1<PhotoDataEntity>() {
+                                @Override
+                                public void call(PhotoDataEntity photoDataEntity) {
+                                    updatePhotoInDb(photoDataEntity);
+                                }
+                            },
+                            new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    throwable.printStackTrace();
+                                }
+                            },
+                            new Action0() {
+                                @Override
+                                public void call() {
+                                    repositoryDbListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
+                                }
+                            }
+                    );
         }
 
         @Override
@@ -133,8 +167,9 @@ public class PhotosDbStore implements IPhotoDataStore {
                                 new Action0() {
                                     @Override
                                     public void call() {
-                                        cloudStore.downloadPhotos(parseToDownload(), listCallback);
-                                        repositoryDbListCallback.onPhotoDbDataSaved(dataEntityList);
+                                        //todo filter if no change and don't send to presenter
+//                                        repositoryDbListCallback.onPhotoDbDataSaved(dataEntityList);
+                                        cloudStore.downloadPhotos(filterForDownload(), listCallback);
                                     }
                                 }
                         )
@@ -146,7 +181,7 @@ public class PhotosDbStore implements IPhotoDataStore {
      *
      * @return
      */
-    private List<PhotoDataEntity> parseToDownload() {
+    private List<PhotoDataEntity> filterForDownload() {
         List<PhotoDataEntity> existing = getPhotoListFromDb();
         List<PhotoDataEntity> toDownload = new ArrayList<>();
         if (existing != null) {
@@ -260,11 +295,13 @@ public class PhotosDbStore implements IPhotoDataStore {
      *
      * @param callback
      */
-    public void getPhotosToPresent(PhotoDBRepoCallback callback) {
+    public void getPhotosToPresent(int page, String query, PhotoDBRepoCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        callback.onPhotoListRetrieved(getPhotoListFromDb());
+        repositoryDbListCallback = callback;
+//        callback.onPhotoListRetrieved(getPhotoListFromDb());
+        cloudStore.getPhotoEntityList(page, query, listCallback);
     }
 
     @Override
@@ -292,5 +329,6 @@ public class PhotosDbStore implements IPhotoDataStore {
     @Override
     public void dispose() {
         subscription.unsubscribe();
+        cloudStore.dispose();
     }
 }

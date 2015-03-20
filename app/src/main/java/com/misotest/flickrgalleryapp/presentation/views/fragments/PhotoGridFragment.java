@@ -110,29 +110,6 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     private boolean showPhotoMenu(final int position) {
-//        Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
-//        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-//        alertDialogBuilder.setPositiveButton(getActivity().getApplicationContext().getString(R.string.share),
-//                new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialogInterface, int i) {
-//                String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
-//                removedPosition = position;
-//                if (filePath != null) {
-//                    CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
-//                }
-//            }
-//        });
-//        alertDialogBuilder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialogInterface, int i) {
-//                mItemListAdapter.removeItem(position);
-//                mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
-//            }
-//        });
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//        alertDialog.show();
-
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         alertDialog.setTitle("Photo menu");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Delete",

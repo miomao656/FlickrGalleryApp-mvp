@@ -2,7 +2,6 @@ package com.misotest.flickrgalleryapp.data.repository;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.data.repository.datasource.IPhotoDataStore;
-import com.misotest.flickrgalleryapp.data.repository.datasource.PhotoCloudStore;
 import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDbStore;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
 
@@ -13,22 +12,16 @@ import java.util.List;
  */
 public class PhotoDataRepository implements IPhotosRepository {
 
-    private PhotoCloudStore photoCloudStore = new PhotoCloudStore();
-
     private PhotosDbStore photosDbStore = new PhotosDbStore();
 
     private PhotoListCallback photoListCallback;
-
-    private int page;
-    private String query;
-    private boolean isOnline;
 
     private IPhotoDataStore.PhotoDBRepoCallback dbListCallback = new IPhotoDataStore.PhotoDBRepoCallback() {
 
         @Override
         public void onPhotoDbDataSaved(final List<PhotoDataEntity> photoDataEntities) {
             if (photoDataEntities != null) {
-                photoListCallback.onPhotoListUpdated(photoDataEntities);
+                photoListCallback.onPhotoListLoaded(photoDataEntities);
             }
         }
 
@@ -36,9 +29,6 @@ public class PhotoDataRepository implements IPhotosRepository {
         public void onPhotoListRetrieved(List<PhotoDataEntity> photoDataEntities) {
             if (photoDataEntities != null) {
                 photoListCallback.onPhotoListLoaded(photoDataEntities);
-            }
-            if (isOnline) {
-                photoCloudStore.getPhotoEntityList(page, query, listCallback);
             }
         }
 
@@ -55,22 +45,6 @@ public class PhotoDataRepository implements IPhotosRepository {
         @Override
         public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
             photoListCallback.onPhotoUpdated(photoDataEntity);
-        }
-    };
-    private IPhotoDataStore.PhotoRestRepoCallback listCallback = new IPhotoDataStore.PhotoRestRepoCallback() {
-        @Override
-        public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
-            photosDbStore.savePhotoEntityList(photoDataEntities, dbListCallback);
-        }
-
-        @Override
-        public void onPhotoDownloaded(PhotoDataEntity photoDataEntity) {
-            photosDbStore.updatePhotoInDb(photoDataEntity);
-        }
-
-        @Override
-        public void onError(Throwable exception) {
-            photoListCallback.onError(exception);
         }
     };
 
@@ -92,14 +66,10 @@ public class PhotoDataRepository implements IPhotosRepository {
             throw new IllegalArgumentException("Callback cannot be null!!!");
         }
         this.photoListCallback = photoListCallback;
-        this.page = page;
-        this.query = query;
-        this.isOnline = isOnline;
-        photosDbStore.getPhotosToPresent(dbListCallback);
+        photosDbStore.getPhotosToPresent(page, query, dbListCallback);
     }
 
     public void dispose() {
         photosDbStore.dispose();
-        photoCloudStore.dispose();
     }
 }
