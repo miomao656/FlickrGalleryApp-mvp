@@ -6,7 +6,7 @@ import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
-import com.misotest.flickrgalleryapp.presentation.utils.ConnectionUtils;
+import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 
 import java.util.List;
@@ -49,7 +49,6 @@ public class PhotosListPresenter extends Presenter {
 
         @Override
         public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
-            photoGridView.hideLoading();
             photoGridView.updatePhotoInList(mapper.transform(photoDataEntity));
         }
     };
@@ -88,7 +87,7 @@ public class PhotosListPresenter extends Presenter {
      */
     public void getPage(int page, String query) {
         getPhotosUseCase.requestPhotos(page, query,
-                ConnectionUtils.isNetworkAvailable(photoGridView.getContext()), useCaseUseCaseCallback);
+                CommonUtils.isNetworkAvailable(photoGridView.getContext()), useCaseUseCaseCallback);
     }
 
     /**

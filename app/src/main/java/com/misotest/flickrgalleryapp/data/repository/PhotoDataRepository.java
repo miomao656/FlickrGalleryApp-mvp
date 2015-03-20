@@ -19,12 +19,26 @@ public class PhotoDataRepository implements IPhotosRepository {
 
     private PhotoListCallback photoListCallback;
 
-    private IPhotoDataStore.PhotoDataRepositoryDbListCallback dbListCallback = new IPhotoDataStore.PhotoDataRepositoryDbListCallback() {
+    private int page;
+    private String query;
+    private boolean isOnline;
+
+    private IPhotoDataStore.PhotoDBRepoCallback dbListCallback = new IPhotoDataStore.PhotoDBRepoCallback() {
 
         @Override
-        public void onPhotoDbDataSaved(List<PhotoDataEntity> photoDataEntities) {
+        public void onPhotoDbDataSaved(final List<PhotoDataEntity> photoDataEntities) {
             if (photoDataEntities != null) {
                 photoListCallback.onPhotoListUpdated(photoDataEntities);
+            }
+        }
+
+        @Override
+        public void onPhotoListRetrieved(List<PhotoDataEntity> photoDataEntities) {
+            if (photoDataEntities != null) {
+                photoListCallback.onPhotoListLoaded(photoDataEntities);
+            }
+            if (isOnline) {
+                photoCloudStore.getPhotoEntityList(page, query, listCallback);
             }
         }
 
@@ -43,8 +57,7 @@ public class PhotoDataRepository implements IPhotosRepository {
             photoListCallback.onPhotoUpdated(photoDataEntity);
         }
     };
-
-    private IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
+    private IPhotoDataStore.PhotoRestRepoCallback listCallback = new IPhotoDataStore.PhotoRestRepoCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
             photosDbStore.savePhotoEntityList(photoDataEntities, dbListCallback);
@@ -79,10 +92,10 @@ public class PhotoDataRepository implements IPhotosRepository {
             throw new IllegalArgumentException("Callback cannot be null!!!");
         }
         this.photoListCallback = photoListCallback;
-        if (isOnline) {
-            photoCloudStore.getPhotoEntityList(page, query, listCallback);
-        }
-        photosDbStore.getPhotoEntityList(page, query, dbListCallback);
+        this.page = page;
+        this.query = query;
+        this.isOnline = isOnline;
+        photosDbStore.getPhotosToPresent(dbListCallback);
     }
 
     public void dispose() {

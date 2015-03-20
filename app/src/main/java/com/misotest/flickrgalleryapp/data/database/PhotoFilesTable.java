@@ -13,7 +13,7 @@ public class PhotoFilesTable {
     public static final String KEY_PHOTO_PATH = "photo_file_path";
 
     private static final String CREATE_ITEMS_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-            KEY_PHOTO_ID + " TEXT PRIMARY KEY UNIQUE, " +
+            KEY_PHOTO_ID + " TEXT PRIMARY KEY, " +
             KEY_PHOTO_TITLE + " TEXT, " +
             KEY_PHOTO_URL + " TEXT, " +
             KEY_PHOTO_PATH + " TEXT)";

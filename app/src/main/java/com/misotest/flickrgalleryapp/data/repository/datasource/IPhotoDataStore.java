@@ -41,19 +41,14 @@ public interface IPhotoDataStore {
     /**
      * Get a collection of {@link PhotoDataEntity}.
      */
-    void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback);
-
-    /**
-     * Get a collection of {@link PhotoDataEntity}.
-     */
-    void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback);
+    void getPhotoEntityList(int page, String query, PhotoRestRepoCallback photoRestRepoCallback);
 
     /**
      * Save a collection of {@link PhotoDataEntity}.
      */
-    void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback);
+    void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDBRepoCallback callback);
 
-    void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback);
+    void deletePhotoFromDb(String photoId, PhotoDBRepoCallback photoDBRepoCallback);
 
     /**
      * Cancel all running operations
@@ -64,7 +59,7 @@ public interface IPhotoDataStore {
      * UseCaseCallback used for clients to be notified when either a user list has been loaded or any error
      * occurred.
      */
-    interface PhotoDataRepositoryListCallback {
+    interface PhotoRestRepoCallback {
         void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities);
 
         void onPhotoDownloaded(PhotoDataEntity photoDataEntity);
@@ -76,9 +71,11 @@ public interface IPhotoDataStore {
      * UseCaseCallback used for clients to be notified when either a user list has been loaded or any error
      * occurred.
      */
-    interface PhotoDataRepositoryDbListCallback {
+    interface PhotoDBRepoCallback {
 
         void onPhotoDbDataSaved(List<PhotoDataEntity> photoDataEntities);
+
+        void onPhotoListRetrieved(List<PhotoDataEntity> photoDataEntities);
 
         void onPhotoDeleted(String photoID);
 

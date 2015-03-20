@@ -1,9 +1,12 @@
 package com.misotest.flickrgalleryapp.presentation.views.fragments;
 
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,6 +20,7 @@ import com.misotest.flickrgalleryapp.R;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 import com.misotest.flickrgalleryapp.presentation.utils.FragmentHelper;
 import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
@@ -25,11 +29,12 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import timber.log.Timber;
 
 /**
  * A Fragment containing a grid view.
  */
-public class PhotoGridFragment extends Fragment implements PhotoGridView, PhotosGridAdapter.GridActions {
+public class PhotoGridFragment extends Fragment implements PhotoGridView, PhotosGridAdapter.ViewHolder.GridActions {
 
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
@@ -66,6 +71,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
         mItemListAdapter = new PhotosGridAdapter(this);
         mGridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 4);
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
+        mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
         mMyRecyclerView.setHasFixedSize(true);
         mMyRecyclerView.setAdapter(mItemListAdapter);
@@ -99,10 +105,57 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
     }
 
     @Override
-    public void onLongPhotoClick(int position, PhotoPresentationModel presentationModel, View view) {
-        Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
-        mPhotoListPresenter.deletePhoto(presentationModel.photo_id);
-        removedPosition = position;
+    public boolean onPhotoLongClicked(final int position) {
+        return showPhotoMenu(position);
+    }
+
+    private boolean showPhotoMenu(final int position) {
+//        Toast.makeText(getContext(), "position: " + position, Toast.LENGTH_SHORT).show();
+//        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+//        alertDialogBuilder.setPositiveButton(getActivity().getApplicationContext().getString(R.string.share),
+//                new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
+//                removedPosition = position;
+//                if (filePath != null) {
+//                    CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
+//                }
+//            }
+//        });
+//        alertDialogBuilder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                mItemListAdapter.removeItem(position);
+//                mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
+//            }
+//        });
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//        alertDialog.show();
+
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+        alertDialog.setTitle("Photo menu");
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Delete",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mItemListAdapter.removeItem(position);
+                        mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Share",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
+                        removedPosition = position;
+                        if (filePath != null) {
+                            CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
+                        }
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+        return true;
     }
 
     @Override
@@ -133,7 +186,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, Photos
 
     @Override
     public void onPhotoDeleted(String photoID) {
-        mItemListAdapter.deletedPhoto(photoID, removedPosition);
+        Timber.d("deleted photo " + photoID);
     }
 
     @Override

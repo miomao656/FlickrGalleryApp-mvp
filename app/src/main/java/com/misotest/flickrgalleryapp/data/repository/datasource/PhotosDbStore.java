@@ -29,7 +29,7 @@ import rx.subscriptions.CompositeSubscription;
 public class PhotosDbStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
-    private PhotoDataRepositoryDbListCallback repositoryDbListCallback;
+    private PhotoDBRepoCallback repositoryDbListCallback;
 
     /**
      * Used to call rest service and download image to device
@@ -39,7 +39,7 @@ public class PhotosDbStore implements IPhotoDataStore {
     /**
      * Callback to download images and update database
      */
-    private IPhotoDataStore.PhotoDataRepositoryListCallback listCallback = new IPhotoDataStore.PhotoDataRepositoryListCallback() {
+    private PhotoRestRepoCallback listCallback = new PhotoRestRepoCallback() {
         @Override
         public void onPhotoDataEntityListLoaded(List<PhotoDataEntity> photoDataEntities) {
 
@@ -90,10 +90,10 @@ public class PhotosDbStore implements IPhotoDataStore {
     /**
      * Save retrieved data from rest to database
      *
-     * @param uriList
+     * @param dataEntityList
      */
-    public void saveDataToDb(List<PhotoDataEntity> uriList) {
-        subscription.add(Observable.from(uriList)
+    public void saveDataToDb(final List<PhotoDataEntity> dataEntityList) {
+        subscription.add(Observable.from(dataEntityList)
                         .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
                             @Override
                             public Observable<PhotoDataEntity> call(PhotoDataEntity photoDomainEntity) {
@@ -134,7 +134,7 @@ public class PhotosDbStore implements IPhotoDataStore {
                                     @Override
                                     public void call() {
                                         cloudStore.downloadPhotos(parseToDownload(), listCallback);
-                                        repositoryDbListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
+                                        repositoryDbListCallback.onPhotoDbDataSaved(dataEntityList);
                                     }
                                 }
                         )
@@ -255,24 +255,24 @@ public class PhotosDbStore implements IPhotoDataStore {
         }
     }
 
-    @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback) {
-        if (photoDataRepositoryListCallback == null) {
+    /**
+     * On app start retrieve data to present if any in db
+     *
+     * @param callback
+     */
+    public void getPhotosToPresent(PhotoDBRepoCallback callback) {
+        if (callback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(getPhotoListFromDb());
+        callback.onPhotoListRetrieved(getPhotoListFromDb());
     }
 
     @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback) {
-        if (photoDataRepositoryListCallback == null) {
-            throw new IllegalArgumentException("callback cannot be null!!!");
-        }
-        photoDataRepositoryListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
+    public void getPhotoEntityList(int page, String query, PhotoRestRepoCallback photoRestRepoCallback) {
     }
 
     @Override
-    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
+    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDBRepoCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
@@ -281,11 +281,11 @@ public class PhotosDbStore implements IPhotoDataStore {
     }
 
     @Override
-    public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
-        if (photoDataRepositoryDbListCallback == null) {
+    public void deletePhotoFromDb(String photoId, PhotoDBRepoCallback photoDBRepoCallback) {
+        if (photoDBRepoCallback == null) {
             throw new IllegalArgumentException("callback cannot be null!!!");
         }
-        this.repositoryDbListCallback = photoDataRepositoryDbListCallback;
+        this.repositoryDbListCallback = photoDBRepoCallback;
         deletePhotoFromDb(photoId);
     }
 

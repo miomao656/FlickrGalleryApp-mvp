@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -21,28 +22,25 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import timber.log.Timber;
 
 /**
  * Adapter for showing photos in grid list view
  */
 public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.ViewHolder> {
 
-    final Handler handler = new Handler();
-    Runnable mLongPressed = new Runnable() {
-        public void run() {
-            Log.i("", "Long press!");
-//            mGridActions.onLongPhotoClick();
-        }
-    };
+    private static final long NOTIFY_DELAY = 500;
+
+
     private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
-    private GridActions mGridActions;
+    private ViewHolder.GridActions mGridActions;
 
     /**
      * Constructor including callback for onclick events
      *
      * @param mGridActions
      */
-    public PhotosGridAdapter(GridActions mGridActions) {
+    public PhotosGridAdapter(ViewHolder.GridActions mGridActions) {
         this.mGridActions = mGridActions;
     }
 
@@ -73,17 +71,21 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
      * @param presentationModels
      */
     public void updatePhotos(List<PhotoPresentationModel> presentationModels) {
-        presentationModelList.clear();
-        for (PhotoPresentationModel model : presentationModels) {
-            presentationModelList.add(model);
+        if (!presentationModelList.isEmpty()) {
+            presentationModelList.clear();
+            for (PhotoPresentationModel model : presentationModels) {
+                presentationModelList.add(model);
+            }
+            notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
+        } else {
+            addPhotos(presentationModels, false);
         }
-        notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_list_row, parent, false);
-        return new ViewHolder(v);
+        return new ViewHolder(v, mGridActions);
     }
 
     @Override
@@ -104,33 +106,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
                     .noFade()
                     .into(viewHolder.mItemImage, callback(viewHolder));
         }
-        viewHolder.mItemImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mGridActions.onPhotoClick(position);
-            }
-        });
 
-        viewHolder.mItemImage.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                mGridActions.onLongPhotoClick(position, itemDomainEntity, view);
-                return true;
-            }
-        });
-//        viewHolder.mItemImage.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    handler.postDelayed(mLongPressed, 1000);
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    handler.removeCallbacks(mLongPressed);
-//                }
-//                return false;
-//            }
-//        });
     }
 
     /**
@@ -182,6 +158,9 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
      */
     public void updatePhoto(PhotoPresentationModel presentationModel) {
         PhotoPresentationModel photoPresentationModel = null;
+//        for (int i = 0; i < presentationModelList.size() - 1; i++) {
+//            if (presentationModelList.get(i))
+//        }
         for (PhotoPresentationModel model : presentationModelList) {
             if (model.photo_id.equals(presentationModel.photo_id)) {
                 model.photo_file_path = presentationModel.photo_file_path;
@@ -196,14 +175,19 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     /**
      * Delete photo with photo_id at removed position and refresh view
      *
-     * @param photo_id
-     * @param removedPosition
+     * @param position
      */
-    public void deletedPhoto(String photo_id, int removedPosition) {
-        if (presentationModelList.get(removedPosition).photo_id.equals(photo_id)) {
-            presentationModelList.remove(removedPosition);
-        }
-        notifyItemRemoved(removedPosition);
+    public void removeItem(final int position) {
+        presentationModelList.remove(position);
+        // notify of the removal with a delay so there is a brief pause after returning
+        // from the book details screen; this makes the animation more noticeable
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                notifyItemRemoved(position);
+            }
+        }, NOTIFY_DELAY);
     }
 
     @Override
@@ -217,32 +201,74 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     }
 
     /**
-     * Callback for on click and on long click events for recycler adapter
+     * Get photo object at given position
+     *
+     * @param position
+     * @return
      */
-    public interface GridActions {
-
-        void onPhotoClick(int position);
-
-        void onLongPhotoClick(int position, PhotoPresentationModel presentationModel, View view);
+    public PhotoPresentationModel getPhoto(int position) {
+        return presentationModelList.get(position);
     }
 
     /**
      * Class representing view holder for recycler view list elements
      */
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
+            View.OnLongClickListener, View.OnTouchListener {
 
+        private final GridActions listener;
         @InjectView(R.id.photo_view)
         ImageView mItemImage;
 
-        public ViewHolder(View view) {
+        //todo handle long press as a staring point for menu animation
+        final Handler handler = new Handler();
+        Runnable mLongPressed = new Runnable() {
+            public void run() {
+                Log.i("", "Long press!");
+            }
+        };
+
+        public ViewHolder(View view, GridActions listener) {
             super(view);
             ButterKnife.inject(this, view);
-            mItemImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+            mItemImage.setOnClickListener(this);
+            mItemImage.setOnLongClickListener(this);
+            this.listener = listener;
+        }
 
-                }
-            });
+        @Override
+        public void onClick(View view) {
+            if (listener != null) {
+                listener.onPhotoClick(getPosition());
+            }
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            return listener != null && listener.onPhotoLongClicked(getPosition());
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            //todo get the positon for drawing the circle
+            Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
+//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+//                    handler.postDelayed(mLongPressed, 1000);
+//                }
+//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+//                    handler.removeCallbacks(mLongPressed);
+//                }
+            return false;
+        }
+
+        /**
+         * Callback for on click and on long click events for recycler adapter
+         */
+        public interface GridActions {
+
+            public void onPhotoClick(int position);
+
+            public boolean onPhotoLongClicked(int position);
         }
     }
 }

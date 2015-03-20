@@ -24,7 +24,7 @@ import timber.log.Timber;
 public class PhotoCloudStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
-    private PhotoDataRepositoryListCallback photoDataRepositoryListCallback;
+    private PhotoRestRepoCallback photoRestRepoCallback;
 
     /**
      * Rest call for retrieving a list of PhotosEntity objects and mapping them to temp
@@ -71,7 +71,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-                                        photoDataRepositoryListCallback.onError(throwable);
+                                        photoRestRepoCallback.onError(throwable);
                                     }
                                 }
                         )
@@ -117,14 +117,14 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 new Action1<List<PhotoDataEntity>>() {
                                     @Override
                                     public void call(List<PhotoDataEntity> photoDataEntityList) {
-                                        photoDataRepositoryListCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
+                                        photoRestRepoCallback.onPhotoDataEntityListLoaded(photoDataEntityList);
                                     }
                                 },
                                 new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
                                         throwable.printStackTrace();
-                                        photoDataRepositoryListCallback.onError(throwable);
+                                        photoRestRepoCallback.onError(throwable);
                                     }
                                 }
                         )
@@ -132,26 +132,21 @@ public class PhotoCloudStore implements IPhotoDataStore {
     }
 
     @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryListCallback photoDataRepositoryListCallback) {
-        if (photoDataRepositoryListCallback == null) {
+    public void getPhotoEntityList(int page, String query, PhotoRestRepoCallback photoRestRepoCallback) {
+        if (photoRestRepoCallback == null) {
             throw new IllegalArgumentException("Callback cannot be null!!!");
         }
-        this.photoDataRepositoryListCallback = photoDataRepositoryListCallback;
+        this.photoRestRepoCallback = photoRestRepoCallback;
         getPhotos(page, query);
     }
 
     @Override
-    public void getPhotoEntityList(int page, String query, PhotoDataRepositoryDbListCallback photoDataRepositoryListCallback) {
-
-    }
-
-    @Override
-    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDataRepositoryDbListCallback callback) {
+    public void savePhotoEntityList(List<PhotoDataEntity> dataEntityList, PhotoDBRepoCallback callback) {
         //save photo to server
     }
 
     @Override
-    public void deletePhotoFromDb(String photoId, PhotoDataRepositoryDbListCallback photoDataRepositoryDbListCallback) {
+    public void deletePhotoFromDb(String photoId, PhotoDBRepoCallback photoDBRepoCallback) {
         //delete photo from server
     }
 
@@ -165,7 +160,7 @@ public class PhotoCloudStore implements IPhotoDataStore {
      *
      * @param domainEntityList
      */
-    public void downloadPhotos(List<PhotoDataEntity> domainEntityList, final PhotoDataRepositoryListCallback callback) {
+    public void downloadPhotos(List<PhotoDataEntity> domainEntityList, final PhotoRestRepoCallback callback) {
         subscription.add(
                 Observable.from(domainEntityList)
                         .filter(new Func1<PhotoDataEntity, Boolean>() {
@@ -197,8 +192,8 @@ public class PhotoCloudStore implements IPhotoDataStore {
                         .subscribe(
                                 new Action1<PhotoDataEntity>() {
                                     @Override
-                                    public void call(PhotoDataEntity uriList) {
-                                        callback.onPhotoDownloaded(uriList);
+                                    public void call(PhotoDataEntity entity) {
+                                        callback.onPhotoDownloaded(entity);
                                     }
                                 },
                                 new Action1<Throwable>() {
