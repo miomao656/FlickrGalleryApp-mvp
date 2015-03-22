@@ -29,16 +29,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     private static final long NOTIFY_DELAY = 500;
 
     private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
-    private ViewHolder.GridActions mGridActions;
-
-    /**
-     * Constructor including callback for onclick events
-     *
-     * @param mGridActions
-     */
-    public PhotosGridAdapter(ViewHolder.GridActions mGridActions) {
-        this.mGridActions = mGridActions;
-    }
 
     /**
      * Add photo list to adapter and refresh added views
@@ -81,7 +71,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_list_row, parent, false);
-        return new ViewHolder(v, mGridActions);
+        return new ViewHolder(v);
     }
 
     @Override
@@ -206,33 +196,14 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     /**
      * Class representing view holder for recycler view list elements
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final GridActions listener;
         @InjectView(R.id.photo_view)
         ImageView mItemImage;
 
-        public ViewHolder(View view, GridActions listener) {
+        public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
-//            mItemImage.setOnClickListener(this);
-            this.listener = listener;
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (listener != null) {
-                listener.onPhotoClick(getPosition());
-            }
-        }
-
-        /**
-         * Callback for on click and on long click events for recycler adapter
-         */
-        public interface GridActions {
-
-            void onPhotoClick(int position);
-
         }
     }
 }

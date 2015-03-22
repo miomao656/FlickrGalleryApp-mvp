@@ -36,8 +36,7 @@ import timber.log.Timber;
 /**
  * A Fragment containing a grid view.
  */
-public class PhotoGridFragment extends Fragment implements PhotoGridView,
-        PhotosGridAdapter.ViewHolder.GridActions {
+public class PhotoGridFragment extends Fragment implements PhotoGridView, View.OnTouchListener {
 
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
@@ -79,58 +78,23 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         mMyRecyclerView.setLayoutManager(mGridLayoutManager);
         mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
-        mItemListAdapter = new PhotosGridAdapter(this);
+        mItemListAdapter = new PhotosGridAdapter();
         mMyRecyclerView.setAdapter(mItemListAdapter);
         startPresenter();
         gestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
-        mMyRecyclerView.setOnTouchListener(
-                new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View view, final MotionEvent motionEvent) {
-                        View v = mMyRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-                        int position = mMyRecyclerView.getChildAdapterPosition(v);
-                        if (gestureDetector.onTouchEvent(motionEvent)) {
-                            // single tap
-                            onPhotoClick(position);
-                            return true;
-                        } else {
-                            // your code for move and drag
-
-                            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                                displayMenu(motionEvent);
-                                Timber.d("position" + mMyRecyclerView.getChildAdapterPosition(v));
-                                return true;
-                            }
-                            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                                int x = (int) motionEvent.getRawX();
-                                int y = (int) motionEvent.getRawY();
-                                if (menu_share != null && menu_delete != null) {
-                                    if (inViewInBounds(menu_share, x, y)) {
-                                        String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
-                                        if (filePath != null) {
-                                            CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
-                                        }
-                                        Timber.e("share " + position);
-                                    }
-
-                                    if (inViewInBounds(menu_delete, x, y)) {
-                                        mItemListAdapter.removeItem(position);
-                                        mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
-                                        Timber.e("remove " + position);
-                                    }
-                                    mRelativeLayout.removeAllViews();
-                                }
-                                return false;
-                            }
-                        }
-                        return false;
-                    }
-                }
-        );
+        mMyRecyclerView.setOnTouchListener(this);
         screenWidth = DeviceDimensionsHelper.getDisplayWidth(getContext());
         screenHeight = DeviceDimensionsHelper.getDisplayHeight(getContext());
     }
 
+    /**
+     * Checks if view is in bounds and returns true if it is false otherwise
+     *
+     * @param view
+     * @param x
+     * @param y
+     * @return
+     */
     private boolean inViewInBounds(View view, int x, int y) {
         view.getDrawingRect(outRect);
         view.getLocationOnScreen(location);
@@ -138,6 +102,11 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         return outRect.contains(x, y);
     }
 
+    /**
+     * Displays the circle with animated buttons for share and delete
+     *
+     * @param motionEvent
+     */
     private void displayMenu(MotionEvent motionEvent) {
         menu_delete = (RelativeLayout) getActivity().getLayoutInflater()
                 .inflate(R.layout.menu_button_delete, null);
@@ -175,11 +144,24 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         }
     }
 
+    /**
+     * Initializes the presenter
+     */
     private void startPresenter() {
         mPhotoListPresenter = new PhotosListPresenter(this);
         mPhotoListPresenter.setQuery("akita");
         mPhotoListPresenter.startPresenting();
         isPaging = false;
+    }
+
+    /**
+     * Opens a details fragment on photo click
+     *
+     * @param position
+     */
+    private void onPhotoClick(int position) {
+        FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
+                PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
     }
 
     @Override
@@ -192,12 +174,6 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.reset(this);
-    }
-
-    @Override
-    public void onPhotoClick(int position) {
-        FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
-                PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
     }
 
     @Override
@@ -250,6 +226,48 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
         return getActivity().getApplicationContext();
     }
 
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        View v = mMyRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+        int position = mMyRecyclerView.getChildAdapterPosition(v);
+        if (gestureDetector.onTouchEvent(motionEvent)) {
+            // single click
+            onPhotoClick(position);
+            return true;
+        } else {
+            // initialize menu
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                gestureDetector.onTouchEvent(motionEvent);
+                return true;
+            }
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                int x = (int) motionEvent.getRawX();
+                int y = (int) motionEvent.getRawY();
+                if (menu_share != null && menu_delete != null) {
+                    if (inViewInBounds(menu_share, x, y)) {
+                        String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
+                        if (filePath != null) {
+                            CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
+                        }
+                        Timber.e("share " + position);
+                    }
+
+                    if (inViewInBounds(menu_delete, x, y)) {
+                        mItemListAdapter.removeItem(position);
+                        mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
+                        Timber.e("remove " + position);
+                    }
+                    mRelativeLayout.removeAllViews();
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Helper gesture detector for detecting on photo click
+     */
     private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
 
         @Override
@@ -257,5 +275,10 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView,
             return true;
         }
 
+        @Override
+        public void onLongPress(MotionEvent e) {
+            //init menu on long press
+            displayMenu(e);
+        }
     }
 }
