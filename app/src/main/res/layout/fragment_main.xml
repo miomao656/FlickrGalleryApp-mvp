@@ -28,26 +28,8 @@
         android:id="@+id/long_press_container"
         android:layout_centerInParent="true"
         android:background="#40000000"
-        android:visibility="gone"
+        android:visibility="visible"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageButton
-            android:id="@+id/btn_delete"
-            android:layout_centerInParent="true"
-            android:src="@drawable/empty_circle"
-            android:background="@android:color/transparent"
-            android:layout_width="40dp"
-            android:layout_height="40dp" />
-
-        <ImageButton
-            android:id="@+id/btn_share"
-            android:layout_centerInParent="true"
-            android:background="@android:color/transparent"
-            android:src="@drawable/empty_circle"
-            android:layout_width="40dp"
-            android:layout_height="40dp" />
-
-    </RelativeLayout>
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

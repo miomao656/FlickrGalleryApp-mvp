@@ -4,9 +4,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -166,6 +164,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         }
     }
 
+
     /**
      * Delete photo with photo_id at removed position and refresh view
      *
@@ -207,26 +206,16 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     /**
      * Class representing view holder for recycler view list elements
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
-            View.OnLongClickListener, View.OnTouchListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final GridActions listener;
         @InjectView(R.id.photo_view)
         ImageView mItemImage;
 
-        //todo handle long press as a staring point for menu animation
-        final Handler handler = new Handler();
-        Runnable mLongPressed = new Runnable() {
-            public void run() {
-                Log.i("", "Long press!");
-            }
-        };
-
         public ViewHolder(View view, GridActions listener) {
             super(view);
             ButterKnife.inject(this, view);
-            mItemImage.setOnClickListener(this);
-            mItemImage.setOnLongClickListener(this);
+//            mItemImage.setOnClickListener(this);
             this.listener = listener;
         }
 
@@ -237,24 +226,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
             }
         }
 
-        @Override
-        public boolean onLongClick(View view) {
-            return listener != null && listener.onPhotoLongClicked(getPosition());
-        }
-
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            //todo get the positon for drawing the circle
-//            Timber.d((view.getLeft() + motionEvent.getX()) + "," + (view.getTop() + motionEvent.getY()));
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    handler.postDelayed(mLongPressed, 1000);
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    handler.removeCallbacks(mLongPressed);
-//                }
-            return false;
-        }
-
         /**
          * Callback for on click and on long click events for recycler adapter
          */
@@ -262,7 +233,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
 
             void onPhotoClick(int position);
 
-            boolean onPhotoLongClicked(int position);
         }
     }
 }

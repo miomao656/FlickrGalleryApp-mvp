@@ -20,5 +20,4 @@ public class CustomRecyclerView extends RecyclerView {
     public CustomRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
-    
 }
