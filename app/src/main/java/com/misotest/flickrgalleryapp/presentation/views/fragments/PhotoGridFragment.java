@@ -60,6 +60,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     private int screenHeight;
     private Rect outRect = new Rect();
     private int[] location = new int[2];
+    private boolean scroolable;
 
     public PhotoGridFragment() {
     }
@@ -127,21 +128,22 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
 
         if ((screenHeight / 2) > motionEvent.getY() && (screenWidth / 2) > motionEvent.getX()) {
             //upper left
-            menu_share.animate().translationX(100).translationY(100).alpha(1f).setDuration(500);
-            menu_delete.animate().translationX(100).translationY(-100).alpha(1f).setDuration(500);
+            menu_share.animate().translationX(-20).translationY(-170).alpha(1f).setDuration(300);
+            menu_delete.animate().translationX(100).translationY(-150).alpha(1f).setDuration(300);
         } else if ((screenHeight / 2) > motionEvent.getY() && (screenWidth / 2) < motionEvent.getX()) {
             //upper right
-            menu_share.animate().translationX(-100).translationY(100).alpha(1f).setDuration(500);
-            menu_delete.animate().translationX(-100).translationY(-100).alpha(1f).setDuration(500);
+            menu_share.animate().translationX(50).translationY(-170).alpha(1f).setDuration(300);
+            menu_delete.animate().translationX(-100).translationY(-150).alpha(1f).setDuration(300);
         } else if ((screenHeight / 2) < motionEvent.getY() && (screenWidth / 2) > motionEvent.getX()) {
             //lower left
-            menu_share.animate().translationX(100).translationY(100).alpha(1f).setDuration(500);
-            menu_delete.animate().translationX(100).translationY(-100).alpha(1f).setDuration(500);
+            menu_share.animate().translationX(-20).translationY(-170).alpha(1f).setDuration(300);
+            menu_delete.animate().translationX(100).translationY(-150).alpha(1f).setDuration(300);
         } else if ((screenHeight / 2) < motionEvent.getY() && (screenWidth / 2) < motionEvent.getX()) {
             //lower right
-            menu_share.animate().translationX(-100).translationY(100).alpha(1f).setDuration(500);
-            menu_delete.animate().translationX(-100).translationY(-100).alpha(1f).setDuration(500);
+            menu_share.animate().translationX(50).translationY(-170).alpha(1f).setDuration(300);
+            menu_delete.animate().translationX(-100).translationY(-150).alpha(1f).setDuration(300);
         }
+        mMyRecyclerView.animate().alpha(0.7f).setDuration(300);
     }
 
     /**
@@ -194,6 +196,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     public void showLoading() {
         if (mProgressBar != null) {
             mProgressBar.setVisibility(View.VISIBLE);
+            mMyRecyclerView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -201,6 +204,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     public void hideLoading() {
         if (mProgressBar != null) {
             mProgressBar.setVisibility(View.GONE);
+            mMyRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -235,9 +239,10 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
             onPhotoClick(position);
             return true;
         } else {
-            // initialize menu
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                // dispatch event to gesture listener for long click
                 gestureDetector.onTouchEvent(motionEvent);
+                scroolable = true;
                 return true;
             }
             if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
@@ -258,8 +263,14 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
                         Timber.e("remove " + position);
                     }
                     mRelativeLayout.removeAllViews();
+                    mMyRecyclerView.setAlpha(1);
                 }
                 return false;
+            }
+            if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                if (!scroolable){
+                    return true;
+                }
             }
         }
         return false;
@@ -279,6 +290,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
         public void onLongPress(MotionEvent e) {
             //init menu on long press
             displayMenu(e);
+            scroolable = false;
         }
     }
 }
