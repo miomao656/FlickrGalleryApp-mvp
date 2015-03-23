@@ -16,4 +16,17 @@ allprojects {
     repositories {
         jcenter()
     }
+    ext {
+        androidApplicationId = 'com.misotest.flickrgalleryapp'
+        androidVersionCode = 1
+        androidVersionName = "0.0.1"
+        minSdkVersion = 15
+        targetSdkVersion = 22
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+
+        //Android
+        androidBuildToolsVersion = "22.0.0"
+        androidCompileSdkVersion = 22
+
+    }
 }

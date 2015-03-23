@@ -1,12 +1,12 @@
 package com.misotest.flickrgalleryapp.data.repository.datasource;
 
+
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Build;
 
-import com.misotest.flickrgalleryapp.MainApplication;
 import com.misotest.flickrgalleryapp.data.database.PhotoFilesTable;
 import com.misotest.flickrgalleryapp.data.database.PhotosContentProvider;
 import com.misotest.flickrgalleryapp.data.datautils.FileUtils;
@@ -30,6 +30,7 @@ public class PhotosDbStore implements IPhotoDataStore {
 
     private CompositeSubscription subscription = new CompositeSubscription();
     private PhotoDBRepoCallback repositoryDbListCallback;
+
 
     /**
      * Used to call rest service and download image to device

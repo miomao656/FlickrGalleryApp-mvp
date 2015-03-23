@@ -1,9 +1,10 @@
-package com.misotest.flickrgalleryapp;
+package com.misotest.flickrgalleryapp.presentation;
 
 import android.app.Application;
 import android.content.Context;
 
 import com.facebook.stetho.Stetho;
+import com.misotest.flickrgalleryapp.BuildConfig;
 import com.misotest.flickrgalleryapp.presentation.utils.RxBus;
 
 import timber.log.Timber;
