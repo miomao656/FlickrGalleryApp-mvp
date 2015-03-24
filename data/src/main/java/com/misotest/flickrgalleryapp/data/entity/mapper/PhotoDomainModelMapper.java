@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Convert from data to presentation model
+ * Convert from data to domain model
  */
 public class PhotoDomainModelMapper {
 

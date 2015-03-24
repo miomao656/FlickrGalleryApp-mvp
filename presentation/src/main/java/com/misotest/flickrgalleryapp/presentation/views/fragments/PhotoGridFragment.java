@@ -97,11 +97,12 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
         startPresenter();
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    //todo release resources when paused
+//    @Override
+//    public void onPause() {
 //        mPhotoListPresenter.stop();
-    }
+//        super.onPause();
+//    }
 
     /**
      * Checks if view is in bounds and returns true if it is false otherwise
@@ -124,7 +125,9 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
      * @param motionEvent
      */
     private void displayMenu(MotionEvent motionEvent) {
+        // set position for photo to be handled
         positionWhenPressed = getPositionTouched(motionEvent);
+
         menu_delete = (RelativeLayout) getActivity().getLayoutInflater()
                 .inflate(R.layout.menu_button_delete, null);
         menu_share = (RelativeLayout) getActivity().getLayoutInflater()
@@ -287,6 +290,12 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
         return false;
     }
 
+    /**
+     * Get position of object in the adapter list
+     *
+     * @param motionEvent
+     * @return
+     */
     private int getPositionTouched(MotionEvent motionEvent) {
         View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
         return mRecyclerView.getChildAdapterPosition(v);

@@ -66,11 +66,12 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         super.onResume();
     }
 
-    @Override
-    public void onPause() {
+    //todo release resources when paused
+//    @Override
+//    public void onPause() {
 //        mPhotoListPresenter.stop();
-        super.onPause();
-    }
+//        super.onPause();
+//    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {

@@ -33,6 +33,11 @@ public class PhotosDbStore implements IPhotoDataStore {
     private CompositeSubscription subscription = new CompositeSubscription();
     private PhotoDBRepoCallback repositoryDbListCallback;
 
+    /**
+     * Constructor for adding context dependency to this module
+     *
+     * @param context
+     */
     public PhotosDbStore(Context context) {
         if (mContext == null) {
             this.mContext = context;
