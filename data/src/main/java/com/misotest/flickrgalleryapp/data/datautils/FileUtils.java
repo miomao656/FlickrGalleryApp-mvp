@@ -4,7 +4,6 @@ import android.os.Environment;
 
 import java.io.File;
 
-import timber.log.Timber;
 
 /**
  * Helper class for handling file related actions
@@ -65,7 +64,6 @@ public class FileUtils {
                 APP_NAME);
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
-                Timber.d(APP_NAME, "failed to create directory");
                 return null;
             }
         }

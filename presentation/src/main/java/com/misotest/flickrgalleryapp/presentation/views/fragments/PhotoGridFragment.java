@@ -16,6 +16,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.misotest.flickrgalleryapp.R;
+import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepository;
+import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDbStore;
+import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
+import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
@@ -41,13 +45,12 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
     @InjectView(R.id.my_recycler_view)
-    CustomRecyclerView mMyRecyclerView;
+    CustomRecyclerView mRecyclerView;
     @InjectView(R.id.progress_bar)
     ProgressBar mProgressBar;
     @InjectView(R.id.long_press_container)
     RelativeLayout mRelativeLayout;
 
-    private GridLayoutManager mGridLayoutManager;
     private PhotosGridAdapter mItemListAdapter;
     private PhotosListPresenter mPhotoListPresenter;
     private boolean isPaging;
@@ -60,7 +63,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     private int screenHeight;
     private Rect outRect = new Rect();
     private int[] location = new int[2];
-    private boolean scroolable;
+    private boolean scrollable;
 
     public PhotoGridFragment() {
     }
@@ -75,17 +78,28 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mGridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 4);
-        mMyRecyclerView.setLayoutManager(mGridLayoutManager);
-        mMyRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mMyRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
+        GridLayoutManager mGridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 4);
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new RecyclerInsetsDecoration(this.getContext()));
         mItemListAdapter = new PhotosGridAdapter();
-        mMyRecyclerView.setAdapter(mItemListAdapter);
-        startPresenter();
+        mRecyclerView.setAdapter(mItemListAdapter);
         gestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
-        mMyRecyclerView.setOnTouchListener(this);
+        mRecyclerView.setOnTouchListener(this);
         screenWidth = DeviceDimensionsHelper.getDisplayWidth(getContext());
         screenHeight = DeviceDimensionsHelper.getDisplayHeight(getContext());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startPresenter();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mPhotoListPresenter.stop();
     }
 
     /**
@@ -143,14 +157,17 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
             menu_share.animate().translationX(50).translationY(-170).alpha(1f).setDuration(300);
             menu_delete.animate().translationX(-100).translationY(-150).alpha(1f).setDuration(300);
         }
-        mMyRecyclerView.animate().alpha(0.7f).setDuration(300);
+        mRecyclerView.animate().alpha(0.7f).setDuration(300);
     }
 
     /**
      * Initializes the presenter
      */
     private void startPresenter() {
-        mPhotoListPresenter = new PhotosListPresenter(this);
+        PhotosDbStore photosDbStore = new PhotosDbStore(getActivity().getApplicationContext());
+        PhotoDataRepository photoDataRepository = PhotoDataRepository.getInstance(photosDbStore);
+        IGetPhotosUseCase iGetPhotosUseCase = new GetPhotosUseCaseImpl(photoDataRepository);
+        mPhotoListPresenter = new PhotosListPresenter(this, iGetPhotosUseCase);
         mPhotoListPresenter.setQuery("akita");
         mPhotoListPresenter.startPresenting();
         isPaging = false;
@@ -164,12 +181,6 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     private void onPhotoClick(int position) {
         FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
                 PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mPhotoListPresenter.stop();
     }
 
     @Override
@@ -196,7 +207,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     public void showLoading() {
         if (mProgressBar != null) {
             mProgressBar.setVisibility(View.VISIBLE);
-            mMyRecyclerView.setVisibility(View.INVISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -204,7 +215,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     public void hideLoading() {
         if (mProgressBar != null) {
             mProgressBar.setVisibility(View.GONE);
-            mMyRecyclerView.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -232,8 +243,8 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        View v = mMyRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-        int position = mMyRecyclerView.getChildAdapterPosition(v);
+        View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+        int position = mRecyclerView.getChildAdapterPosition(v);
         if (gestureDetector.onTouchEvent(motionEvent)) {
             // single click
             onPhotoClick(position);
@@ -242,7 +253,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 // dispatch event to gesture listener for long click
                 gestureDetector.onTouchEvent(motionEvent);
-                scroolable = true;
+                scrollable = true;
                 return true;
             }
             if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
@@ -263,12 +274,12 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
                         Timber.e("remove " + position);
                     }
                     mRelativeLayout.removeAllViews();
-                    mMyRecyclerView.setAlpha(1);
+                    mRecyclerView.setAlpha(1);
                 }
                 return false;
             }
             if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-                if (!scroolable){
+                if (!scrollable) {
                     return true;
                 }
             }
@@ -290,7 +301,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
         public void onLongPress(MotionEvent e) {
             //init menu on long press
             displayMenu(e);
-            scroolable = false;
+            scrollable = false;
         }
     }
 }

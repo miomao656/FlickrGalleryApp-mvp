@@ -18,7 +18,6 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
-import timber.log.Timber;
 
 /**
  * {@link IPhotoDataStore} implementation based on connections to the api (Cloud).
@@ -65,7 +64,6 @@ public class PhotoCloudStore implements IPhotoDataStore {
                                 new Action1<List<PhotosResponse>>() {
                                     @Override
                                     public void call(List<PhotosResponse> photosResponseList) {
-                                        Timber.e(photosResponseList.toString());
                                         getPhotosUrlList(photosResponseList);
                                     }
                                 },

@@ -1,8 +1,7 @@
-package com.misotest.flickrgalleryapp.presentation.entity.mapper;
+package com.misotest.flickrgalleryapp.data.entity.mapper;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
 import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
-import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,22 +10,22 @@ import java.util.List;
 /**
  * Convert from data to presentation model
  */
-public class PhotoPresentationModelMapper {
+public class PhotoDomainModelMapper {
 
-    public PhotoPresentationModelMapper() {
+    public PhotoDomainModelMapper() {
     }
 
     /**
-     * Transform a {@link PhotoDataEntity} into an {@link PhotoPresentationModel}.
+     * Transform a {@link PhotoDataEntity} into an {@link PhotoDomainEntity}.
      *
      * @param photoDataEntity Object to be transformed.
-     * @return {@link PhotoPresentationModel}.
+     * @return {@link PhotoDomainEntity}.
      */
-    public PhotoPresentationModel transform(PhotoDomainEntity photoDataEntity) {
+    public PhotoDomainEntity transform(PhotoDataEntity photoDataEntity) {
         if (photoDataEntity == null) {
             throw new IllegalArgumentException("Cannot transform a null value");
         }
-        PhotoPresentationModel photoPresentationModel = new PhotoPresentationModel();
+        PhotoDomainEntity photoPresentationModel = new PhotoDomainEntity();
         photoPresentationModel.photo_id = photoDataEntity.photo_id;
         photoPresentationModel.photo_title = photoDataEntity.photo_title;
         photoPresentationModel.photo_url = photoDataEntity.photo_url;
@@ -36,17 +35,17 @@ public class PhotoPresentationModelMapper {
     }
 
     /**
-     * Transform a List of {@link PhotoDataEntity} into a List of {@link PhotoPresentationModel}.
+     * Transform a List of {@link PhotoDataEntity} into a List of {@link PhotoDomainEntity}.
      *
      * @param photoDataEntities Objects to be transformed.
-     * @return List of {@link PhotoPresentationModel}.
+     * @return List of {@link PhotoDomainEntity}.
      */
-    public List<PhotoPresentationModel> transform(List<PhotoDomainEntity> photoDataEntities) {
-        List<PhotoPresentationModel> userModelsCollection;
+    public List<PhotoDomainEntity> transform(List<PhotoDataEntity> photoDataEntities) {
+        List<PhotoDomainEntity> userModelsCollection;
 
         if (photoDataEntities != null && !photoDataEntities.isEmpty()) {
-            userModelsCollection = new ArrayList<PhotoPresentationModel>();
-            for (PhotoDomainEntity photo : photoDataEntities) {
+            userModelsCollection = new ArrayList<PhotoDomainEntity>();
+            for (PhotoDataEntity photo : photoDataEntities) {
                 userModelsCollection.add(transform(photo));
             }
         } else {

@@ -1,11 +1,12 @@
 package com.misotest.flickrgalleryapp.domain.interactor;
 
-import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
+
+import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
 
 import java.util.List;
 
 /**
- * This interface represents a execution unit for a use case to get a collection of {@link PhotoDataEntity}.
+ * This interface represents a execution unit for a use case to get a collection of {@link PhotoDomainEntity}.
  */
 public interface IGetPhotosUseCase {
 
@@ -18,14 +19,16 @@ public interface IGetPhotosUseCase {
      * happened.
      */
     interface UseCaseCallback {
-        void onPhotoListLoaded(List<PhotoDataEntity> usersCollection);
+        void onPhotoListLoaded(List<PhotoDomainEntity> usersCollection);
 
         void onPhotoDeleted(String photoID);
 
         void onError(Throwable errorBundle);
 
-        void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList);
+        void onPhotoListUpdated(List<PhotoDomainEntity> photoDataEntityList);
 
-        void onPhotoUpdated(PhotoDataEntity photoDataEntity);
+        void onPhotoUpdated(PhotoDomainEntity photoDataEntity);
     }
+
+    void dispose();
 }

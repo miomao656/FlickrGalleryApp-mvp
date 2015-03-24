@@ -1,6 +1,7 @@
 package com.misotest.flickrgalleryapp.data.repository;
 
 import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
+import com.misotest.flickrgalleryapp.data.entity.mapper.PhotoDomainModelMapper;
 import com.misotest.flickrgalleryapp.data.repository.datasource.IPhotoDataStore;
 import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDbStore;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
@@ -12,23 +13,42 @@ import java.util.List;
  */
 public class PhotoDataRepository implements IPhotosRepository {
 
-    private PhotosDbStore photosDbStore = new PhotosDbStore();
-
+    private static PhotoDataRepository INSTANCE;
+    private PhotosDbStore photosDbStore;
     private PhotoListCallback photoListCallback;
+
+    /**
+     * Constructs a {@link PhotoDataRepository}.
+     *
+     * @param photosDbStore A factory to construct different data source implementations.
+     */
+    protected PhotoDataRepository(PhotosDbStore photosDbStore) {
+        if (photosDbStore == null) {
+            throw new IllegalArgumentException("Invalid null parameters in constructor!!!");
+        }
+        this.photosDbStore = photosDbStore;
+    }
+
+    public static synchronized PhotoDataRepository getInstance(PhotosDbStore dataStoreFactory) {
+        if (INSTANCE == null) {
+            INSTANCE = new PhotoDataRepository(dataStoreFactory);
+        }
+        return INSTANCE;
+    }
 
     private IPhotoDataStore.PhotoDBRepoCallback dbListCallback = new IPhotoDataStore.PhotoDBRepoCallback() {
 
         @Override
         public void onPhotoDbDataSaved(final List<PhotoDataEntity> photoDataEntities) {
             if (photoDataEntities != null) {
-                photoListCallback.onPhotoListLoaded(photoDataEntities);
+                photoListCallback.onPhotoListLoaded(new PhotoDomainModelMapper().transform(photoDataEntities));
             }
         }
 
         @Override
         public void onPhotoListRetrieved(List<PhotoDataEntity> photoDataEntities) {
             if (photoDataEntities != null) {
-                photoListCallback.onPhotoListLoaded(photoDataEntities);
+                photoListCallback.onPhotoListLoaded(new PhotoDomainModelMapper().transform(photoDataEntities));
             }
         }
 
@@ -44,7 +64,7 @@ public class PhotoDataRepository implements IPhotosRepository {
 
         @Override
         public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
-            photoListCallback.onPhotoUpdated(photoDataEntity);
+            photoListCallback.onPhotoUpdated(new PhotoDomainModelMapper().transform(photoDataEntity));
         }
     };
 

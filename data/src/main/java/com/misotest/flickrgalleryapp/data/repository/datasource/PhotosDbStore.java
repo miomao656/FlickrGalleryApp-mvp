@@ -4,6 +4,7 @@ package com.misotest.flickrgalleryapp.data.repository.datasource;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Build;
 
@@ -28,9 +29,15 @@ import rx.subscriptions.CompositeSubscription;
  */
 public class PhotosDbStore implements IPhotoDataStore {
 
+    private Context mContext;
     private CompositeSubscription subscription = new CompositeSubscription();
     private PhotoDBRepoCallback repositoryDbListCallback;
 
+    public PhotosDbStore(Context context) {
+        if (mContext == null) {
+            this.mContext = context;
+        }
+    }
 
     /**
      * Used to call rest service and download image to device
@@ -99,7 +106,7 @@ public class PhotosDbStore implements IPhotoDataStore {
      */
     private List<PhotoDataEntity> getPhotoListFromDb() {
         List<PhotoDataEntity> urls = null;
-        ContentResolver resolver = MainApplication.getContext().getContentResolver();
+        ContentResolver resolver = mContext.getContentResolver();
         String[] projection = PhotosContentProvider.PROJECTION;
         Cursor cursor =
                 resolver.query(PhotosContentProvider.CONTENT_URI,
@@ -153,7 +160,7 @@ public class PhotosDbStore implements IPhotoDataStore {
                                 new Action1<List<ContentValues>>() {
                                     @Override
                                     public void call(List<ContentValues> contentValues) {
-                                        MainApplication.getContext().getContentResolver()
+                                        mContext.getContentResolver()
                                                 .bulkInsert(PhotosContentProvider.CONTENT_URI,
                                                         contentValues.toArray(new ContentValues[contentValues.size()])
                                                 );
@@ -209,7 +216,7 @@ public class PhotosDbStore implements IPhotoDataStore {
         String selection = PhotoFilesTable.KEY_PHOTO_ID + " = '"
                 + photo_id + "'";
         PhotoDataEntity dataEntity = null;
-        Cursor c = MainApplication.getContext().getContentResolver()
+        Cursor c = mContext.getContentResolver()
                 .query(
                         PhotosContentProvider.CONTENT_URI,
                         PhotosContentProvider.PROJECTION,
@@ -244,7 +251,7 @@ public class PhotosDbStore implements IPhotoDataStore {
         values.put(PhotoFilesTable.KEY_PHOTO_TITLE, photoDataEntity.photo_title);
         values.put(PhotoFilesTable.KEY_PHOTO_URL, photoDataEntity.photo_url);
         values.put(PhotoFilesTable.KEY_PHOTO_PATH, photoDataEntity.photo_file_path);
-        MainApplication.getContext().getContentResolver()
+        mContext.getContentResolver()
                 .update(
                         PhotosContentProvider.CONTENT_URI,
                         values,
@@ -264,7 +271,7 @@ public class PhotosDbStore implements IPhotoDataStore {
             if (FileUtils.isExistingFile(entity.photo_file_path)) {
                 FileUtils.deleteFile(new File(entity.photo_file_path));
             }
-            MainApplication.getContext().getContentResolver()
+            mContext.getContentResolver()
                     .delete(PhotosContentProvider.CONTENT_URI,
                             PhotoFilesTable.KEY_PHOTO_ID + " = " + photoID,
                             null

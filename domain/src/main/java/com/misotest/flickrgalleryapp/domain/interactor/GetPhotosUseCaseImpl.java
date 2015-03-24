@@ -1,32 +1,40 @@
 package com.misotest.flickrgalleryapp.domain.interactor;
 
-import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepository;
+import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
 
 import java.util.List;
 
 /**
  * This class is an implementation of {@link IGetPhotosUseCase} that represents a use case for
- * retrieving a collection of all {@link PhotoDataEntity}.
+ * retrieving a collection of all {@link PhotoDomainEntity}.
  */
 public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
 
-    private PhotoDataRepository photoDataRepository = new PhotoDataRepository();
+    private IPhotosRepository photoDataRepository;
 
     private UseCaseCallback useCaseCallback;
 
-    public GetPhotosUseCaseImpl() {
+    /**
+     * Constructor of the class.
+     *
+     * @param userRepository A {@link IPhotosRepository} as a source for retrieving data.
+     */
+    public GetPhotosUseCaseImpl(IPhotosRepository userRepository) {
+        if (userRepository == null) {
+            throw new IllegalArgumentException("Constructor parameters cannot be null!!!");
+        }
+        this.photoDataRepository = userRepository;
     }
 
     private IPhotosRepository.PhotoListCallback repositoryCallback = new IPhotosRepository.PhotoListCallback() {
         @Override
-        public void onPhotoListLoaded(List<PhotoDataEntity> photoCollection) {
+        public void onPhotoListLoaded(List<PhotoDomainEntity> photoCollection) {
             notifyGetPhotoListSuccessfully(photoCollection);
         }
 
         @Override
-        public void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList) {
+        public void onPhotoListUpdated(List<PhotoDomainEntity> photoDataEntityList) {
             useCaseCallback.onPhotoListUpdated(photoDataEntityList);
         }
 
@@ -41,12 +49,12 @@ public class GetPhotosUseCaseImpl implements IGetPhotosUseCase {
         }
 
         @Override
-        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
+        public void onPhotoUpdated(PhotoDomainEntity photoDataEntity) {
             useCaseCallback.onPhotoUpdated(photoDataEntity);
         }
     };
 
-    private void notifyGetPhotoListSuccessfully(final List<PhotoDataEntity> photoDataEntityList) {
+    private void notifyGetPhotoListSuccessfully(final List<PhotoDomainEntity> photoDataEntityList) {
         useCaseCallback.onPhotoListLoaded(photoDataEntityList);
     }
 

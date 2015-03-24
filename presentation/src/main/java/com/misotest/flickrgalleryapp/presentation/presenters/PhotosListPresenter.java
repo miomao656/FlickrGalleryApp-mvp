@@ -1,8 +1,7 @@
 package com.misotest.flickrgalleryapp.presentation.presenters;
 
 
-import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
+import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
@@ -17,14 +16,14 @@ import java.util.List;
  */
 public class PhotosListPresenter extends Presenter {
 
-    private final PhotoGridView photoGridView;
-    private GetPhotosUseCaseImpl getPhotosUseCase;
+    private PhotoGridView photoGridView;
+    private IGetPhotosUseCase getPhotosUseCase;
     private String query;
     private PhotoPresentationModelMapper mapper = new PhotoPresentationModelMapper();
 
     private final IGetPhotosUseCase.UseCaseCallback useCaseUseCaseCallback = new IGetPhotosUseCase.UseCaseCallback() {
         @Override
-        public void onPhotoListLoaded(List<PhotoDataEntity> photosCollection) {
+        public void onPhotoListLoaded(List<PhotoDomainEntity> photosCollection) {
             photoGridView.hideLoading();
             showPhotoListInView(photosCollection);
         }
@@ -42,19 +41,23 @@ public class PhotosListPresenter extends Presenter {
         }
 
         @Override
-        public void onPhotoListUpdated(List<PhotoDataEntity> photoDataEntityList) {
+        public void onPhotoListUpdated(List<PhotoDomainEntity> photoDataEntityList) {
             photoGridView.hideLoading();
             photoGridView.presentPhotosUpdated(mapper.transform(photoDataEntityList));
         }
 
         @Override
-        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
+        public void onPhotoUpdated(PhotoDomainEntity photoDataEntity) {
             photoGridView.updatePhotoInList(mapper.transform(photoDataEntity));
         }
     };
 
-    public PhotosListPresenter(PhotoGridView photoGridView) {
+    public PhotosListPresenter(PhotoGridView photoGridView, IGetPhotosUseCase iGetPhotosUseCase) {
+        if (photoGridView == null || iGetPhotosUseCase == null) {
+            throw new IllegalArgumentException("Constructor parameters cannot be null!!!");
+        }
         this.photoGridView = photoGridView;
+        this.getPhotosUseCase = iGetPhotosUseCase;
     }
 
     public void setQuery(String query) {
@@ -64,7 +67,6 @@ public class PhotosListPresenter extends Presenter {
     @Override
     public void startPresenting() {
         photoGridView.showLoading();
-        getPhotosUseCase = new GetPhotosUseCaseImpl();
         getPage(0, query);
     }
 
@@ -73,7 +75,7 @@ public class PhotosListPresenter extends Presenter {
         getPhotosUseCase.dispose();
     }
 
-    private void showPhotoListInView(List<PhotoDataEntity> usersCollection) {
+    private void showPhotoListInView(List<PhotoDomainEntity> usersCollection) {
         final List<PhotoPresentationModel> userModelsCollection =
                 this.mapper.transform(usersCollection);
         photoGridView.presentPhotos(userModelsCollection);
