@@ -22,11 +22,11 @@ import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
-import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.mvp.presenters.PhotosListPresenter;
 import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 import com.misotest.flickrgalleryapp.presentation.utils.DeviceDimensionsHelper;
 import com.misotest.flickrgalleryapp.presentation.utils.FragmentHelper;
-import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
 import com.misotest.flickrgalleryapp.presentation.views.customviews.CircleView;
 import com.misotest.flickrgalleryapp.presentation.views.customviews.CustomRecyclerView;
@@ -99,7 +99,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     @Override
     public void onPause() {
         super.onPause();
-        mPhotoListPresenter.stop();
+//        mPhotoListPresenter.stop();
     }
 
     /**

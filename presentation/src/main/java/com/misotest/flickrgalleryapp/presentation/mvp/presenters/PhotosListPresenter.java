@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.presenters;
+package com.misotest.flickrgalleryapp.presentation.mvp.presenters;
 
 
 import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
@@ -6,7 +6,7 @@ import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
 import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
-import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
 
 import java.util.List;
 

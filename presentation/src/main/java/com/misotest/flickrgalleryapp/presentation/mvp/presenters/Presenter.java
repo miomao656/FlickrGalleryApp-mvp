@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.presenters;
+package com.misotest.flickrgalleryapp.presentation.mvp.presenters;
 
 /**
  * Interface that represents a Presenter in the model view presenter Pattern

@@ -17,8 +17,8 @@ import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.animation.DepthPageTransformer;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
-import com.misotest.flickrgalleryapp.presentation.presenters.PhotosListPresenter;
-import com.misotest.flickrgalleryapp.presentation.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.mvp.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosSlideAdapter;
 
 import java.util.List;
@@ -68,7 +68,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
 
     @Override
     public void onPause() {
-        mPhotoListPresenter.stop();
+//        mPhotoListPresenter.stop();
         super.onPause();
     }
 

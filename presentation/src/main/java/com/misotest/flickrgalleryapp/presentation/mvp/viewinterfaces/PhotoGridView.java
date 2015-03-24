@@ -1,4 +1,4 @@
-package com.misotest.flickrgalleryapp.presentation.viewinterfaces;
+package com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces;
 
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 
