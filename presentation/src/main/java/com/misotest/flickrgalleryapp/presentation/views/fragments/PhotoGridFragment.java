@@ -64,6 +64,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     private Rect outRect = new Rect();
     private int[] location = new int[2];
     private boolean scrollable;
+    private int positionWhenPressed;
 
     public PhotoGridFragment() {
     }
@@ -123,6 +124,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
      * @param motionEvent
      */
     private void displayMenu(MotionEvent motionEvent) {
+        positionWhenPressed = getPositionTouched(motionEvent);
         menu_delete = (RelativeLayout) getActivity().getLayoutInflater()
                 .inflate(R.layout.menu_button_delete, null);
         menu_share = (RelativeLayout) getActivity().getLayoutInflater()
@@ -243,11 +245,9 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-        int position = mRecyclerView.getChildAdapterPosition(v);
         if (gestureDetector.onTouchEvent(motionEvent)) {
             // single click
-            onPhotoClick(position);
+            onPhotoClick(getPositionTouched(motionEvent));
             return true;
         } else {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -261,17 +261,17 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
                 int y = (int) motionEvent.getRawY();
                 if (menu_share != null && menu_delete != null) {
                     if (inViewInBounds(menu_share, x, y)) {
-                        String filePath = mItemListAdapter.getPhoto(position).photo_file_path;
+                        String filePath = mItemListAdapter.getPhoto(positionWhenPressed).photo_file_path;
                         if (filePath != null) {
-                            CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(position).photo_file_path);
+                            CommonUtils.shareImage(getActivity(), mItemListAdapter.getPhoto(positionWhenPressed).photo_file_path);
                         }
-                        Timber.e("share " + position);
+                        Timber.e("share " + positionWhenPressed);
                     }
 
                     if (inViewInBounds(menu_delete, x, y)) {
-                        mItemListAdapter.removeItem(position);
-                        mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(position).photo_id);
-                        Timber.e("remove " + position);
+                        mPhotoListPresenter.deletePhoto(mItemListAdapter.getPhoto(positionWhenPressed).photo_id);
+                        mItemListAdapter.removeItem(positionWhenPressed);
+                        Timber.e("remove " + positionWhenPressed);
                     }
                     mRelativeLayout.removeAllViews();
                     mRecyclerView.setAlpha(1);
@@ -285,6 +285,11 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
             }
         }
         return false;
+    }
+
+    private int getPositionTouched(MotionEvent motionEvent) {
+        View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+        return mRecyclerView.getChildAdapterPosition(v);
     }
 
     /**
