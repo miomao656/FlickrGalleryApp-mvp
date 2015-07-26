@@ -18,8 +18,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 /**
  * Adapter for showing photos in grid list view
@@ -29,6 +29,23 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
     private static final long NOTIFY_DELAY = 500;
 
     private List<PhotoPresentationModel> presentationModelList = new LinkedList<>();
+
+    /**
+     * Update photo list view new data and refresh views
+     *
+     * @param presentationModels
+     */
+    public void updatePhotos(List<PhotoPresentationModel> presentationModels) {
+        if (!presentationModelList.isEmpty()) {
+            presentationModelList.clear();
+            for (PhotoPresentationModel model : presentationModels) {
+                presentationModelList.add(model);
+            }
+            notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
+        } else {
+            addPhotos(presentationModels, false);
+        }
+    }
 
     /**
      * Add photo list to adapter and refresh added views
@@ -48,23 +65,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
                 presentationModelList.add(element);
             }
             notifyDataSetChanged();
-        }
-    }
-
-    /**
-     * Update photo list view new data and refresh views
-     *
-     * @param presentationModels
-     */
-    public void updatePhotos(List<PhotoPresentationModel> presentationModels) {
-        if (!presentationModelList.isEmpty()) {
-            presentationModelList.clear();
-            for (PhotoPresentationModel model : presentationModels) {
-                presentationModelList.add(model);
-            }
-            notifyItemRangeChanged(presentationModelList.size() - 1, presentationModelList.size() - 1);
-        } else {
-            addPhotos(presentationModels, false);
         }
     }
 
@@ -136,6 +136,16 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         };
     }
 
+    @Override
+    public long getItemId(int position) {
+        return super.getItemId(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        return presentationModelList.size();
+    }
+
     /**
      * Update photo at photo downloaded to device
      *
@@ -153,7 +163,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
             notifyItemChanged(presentationModelList.indexOf(photoPresentationModel));
         }
     }
-
 
     /**
      * Delete photo with photo_id at removed position and refresh view
@@ -173,16 +182,6 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         }, NOTIFY_DELAY);
     }
 
-    @Override
-    public long getItemId(int position) {
-        return super.getItemId(position);
-    }
-
-    @Override
-    public int getItemCount() {
-        return presentationModelList.size();
-    }
-
     /**
      * Get photo object at given position
      *
@@ -198,12 +197,12 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @InjectView(R.id.photo_view)
+        @Bind(R.id.photo_view)
         ImageView mItemImage;
 
         public ViewHolder(View view) {
             super(view);
-            ButterKnife.inject(this, view);
+            ButterKnife.bind(this, view);
         }
     }
 }

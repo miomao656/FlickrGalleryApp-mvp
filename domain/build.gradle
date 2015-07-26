@@ -1,6 +1,8 @@
 apply plugin: 'java'
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = 1.7
+//noinspection GroovyUnusedAssignment
 targetCompatibility = 1.7
 
 configurations {
@@ -14,5 +16,15 @@ sourceSets {
 }
 
 dependencies {
-    compile 'io.reactivex:rxjava:1.0.10'
+    def domainDependencies = rootProject.ext.domainDependencies
+    def domainTestDependencies = rootProject.ext.domainTestDependencies
+
+    provided domainDependencies.daggerCompiler
+    provided domainDependencies.javaxAnnotation
+
+    compile domainDependencies.dagger
+    compile domainDependencies.rxJava
+
+    testCompile domainTestDependencies.junit
+    testCompile domainTestDependencies.mockito
 }

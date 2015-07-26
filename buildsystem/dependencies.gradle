@@ -1,0 +1,108 @@
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+ext {
+    //Android
+    androidBuildToolsVersion = "22.0.1"
+    androidMinSdkVersion = 15
+    androidTargetSdkVersion = 22
+    androidCompileSdkVersion = 22
+
+    //Libraries
+    daggerVersion = '2.0.1'
+    butterKnifeVersion = '7.0.1'
+    rxJavaVersion = '1.0.13'
+    rxAndroidVersion = '0.25.0'
+    javaxAnnotationVersion = '10.0-b28'
+    gsonVersion = '2.3.1'
+    okHttpVersion = '2.4.0'
+    androidAnnotationsVersion = '22.2.1'
+    androidRVVersion = '22.2.1'
+    androidv7Version = '22.2.1'
+    androidDesignVersion = '22.2.1'
+    androidPalleteVersion = '22.2.1'
+    googleServicesVersion = '7.5.0'
+    googleMapsUtilsVersion = '0.3'
+    rxLocationVersion = '0.7@aar'
+    retrofitVersion = '1.9.0'
+    glideVersion = '3.6.0'
+    picassoVersion = '2.5.2'
+    frescoVersion = '0.6.0'
+    realmVersion = '0.81.1'
+    timberVersion = '3.0.1'
+
+    //Testing
+    robolectricVersion = '3.0'
+    jUnitVersion = '4.12'
+    assertJVersion = '1.7.1'
+    mockitoVersion = '1.9.5'
+    dexmakerVersion = '1.0'
+    espressoVersion = '2.0'
+    testingSupportLibVersion = '0.1'
+
+
+    presentationDependencies = [
+            daggerCompiler : "com.google.dagger:dagger-compiler:${daggerVersion}",
+            dagger         : "com.google.dagger:dagger:${daggerVersion}",
+            butterKnife    : "com.jakewharton:butterknife:${butterKnifeVersion}",
+            recyclerView   : "com.android.support:recyclerview-v7:${androidRVVersion}",
+            rxJava         : "io.reactivex:rxjava:${rxJavaVersion}",
+            rxAndroid      : "io.reactivex:rxandroid:${rxAndroidVersion}",
+            javaxAnnotation: "org.glassfish:javax.annotation:${javaxAnnotationVersion}",
+            googleServices : "com.google.android.gms:play-services:${googleServicesVersion}",
+            androidV7      : "com.android.support:appcompat-v7:${androidv7Version}",
+            glide          : "com.github.bumptech.glide:glide:${glideVersion}",
+            picasso        : "com.squareup.picasso:picasso:${picassoVersion}",
+            fresco         : "com.facebook.fresco:fresco:${frescoVersion}",
+            googleMapsUtils: "com.google.maps.android:android-maps-utils:${googleMapsUtilsVersion}",
+            googleLocation : "com.google.android.gms:play-services-location:${googleServicesVersion}",
+            googleMaps     : "com.google.android.gms:play-services-maps:${googleServicesVersion}",
+            googleGCM      : "com.google.android.gms:play-services-gcm:${googleServicesVersion}",
+            googleLogin    : "com.google.android.gms:play-services-identity:${googleServicesVersion}",
+            timber         : "com.jakewharton.timber:timber:${timberVersion}",
+            pallete        : "com.android.support:palette-v7:${androidPalleteVersion}",
+    ]
+
+    presentationTestDependencies = [
+            mockito          : "org.mockito:mockito-core:${mockitoVersion}",
+            dexmaker         : "com.google.dexmaker:dexmaker:${dexmakerVersion}",
+            dexmakerMockito  : "com.google.dexmaker:dexmaker-mockito:${dexmakerVersion}",
+            espresso         : "com.android.support.test.espresso:espresso-core:${espressoVersion}",
+            testingSupportLib: "com.android.support.test:testing-support-lib:${testingSupportLibVersion}",
+    ]
+
+    domainDependencies = [
+            daggerCompiler : "com.google.dagger:dagger-compiler:${daggerVersion}",
+            dagger         : "com.google.dagger:dagger:${daggerVersion}",
+            javaxAnnotation: "org.glassfish:javax.annotation:${javaxAnnotationVersion}",
+            rxJava         : "io.reactivex:rxjava:${rxJavaVersion}",
+    ]
+
+    domainTestDependencies = [
+            junit  : "junit:junit:${jUnitVersion}",
+            mockito: "org.mockito:mockito-core:${mockitoVersion}",
+    ]
+
+    dataDependencies = [
+            daggerCompiler    : "com.google.dagger:dagger-compiler:${daggerVersion}",
+            dagger            : "com.google.dagger:dagger:${daggerVersion}",
+            okHttp            : "com.squareup.okhttp:okhttp:${okHttpVersion}",
+            rxJava            : "io.reactivex:rxjava:${rxJavaVersion}",
+            rxAndroid         : "io.reactivex:rxandroid:${rxAndroidVersion}",
+            javaxAnnotation   : "org.glassfish:javax.annotation:${javaxAnnotationVersion}",
+            androidAnnotations: "com.android.support:support-annotations:${androidAnnotationsVersion}",
+            realm             : "io.realm:realm-android:${realmVersion}",
+            rxLocation        : "pl.charmas.android:android-reactive-location:${rxLocationVersion}",
+            retrofit          : "com.squareup.retrofit:retrofit:${retrofitVersion}",
+    ]
+
+    dataTestDependencies = [
+            junit      : "junit:junit:${jUnitVersion}",
+            assertj    : "org.assertj:assertj-core:${assertJVersion}",
+            mockito    : "org.mockito:mockito-core:${mockitoVersion}",
+            robolectric: "org.robolectric:robolectric:${robolectricVersion}",
+    ]
+}

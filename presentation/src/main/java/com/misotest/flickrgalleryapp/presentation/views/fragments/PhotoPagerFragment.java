@@ -23,17 +23,17 @@ import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosSlideAdap
 
 import java.util.List;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 import timber.log.Timber;
 
 public class PhotoPagerFragment extends Fragment implements View.OnClickListener, PhotoGridView {
 
     public static final String TAG = PhotoPagerFragment.class.getSimpleName();
     private static final String POSITION = "position";
-    @InjectView(R.id.pager)
+    @Bind(R.id.pager)
     ViewPager mPager;
-    @InjectView(R.id.progress_bar)
+    @Bind(R.id.progress_bar)
     ProgressBar mProgressBar;
 
     private int position;
@@ -61,9 +61,14 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    @Nullable
     @Override
-    public void onResume() {
-        super.onResume();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
+        rootView.findViewById(R.id.img_back).setOnClickListener(this);
+        rootView.findViewById(R.id.back_text).setOnClickListener(this);
+        ButterKnife.bind(this, rootView);
+        return rootView;
     }
 
     //todo release resources when paused
@@ -87,20 +92,15 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         mPhotoListPresenter.startPresenting();
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
-        rootView.findViewById(R.id.img_back).setOnClickListener(this);
-        rootView.findViewById(R.id.back_text).setOnClickListener(this);
-        ButterKnife.inject(this, rootView);
-        return rootView;
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.reset(this);
+        ButterKnife.unbind(this);
     }
 
     @Override

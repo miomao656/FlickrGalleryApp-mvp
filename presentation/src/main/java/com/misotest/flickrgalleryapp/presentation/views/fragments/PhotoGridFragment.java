@@ -23,18 +23,18 @@ import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.animation.RecyclerInsetsDecoration;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.mvp.presenters.PhotosListPresenter;
+import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 import com.misotest.flickrgalleryapp.presentation.utils.DeviceDimensionsHelper;
 import com.misotest.flickrgalleryapp.presentation.utils.FragmentHelper;
-import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
 import com.misotest.flickrgalleryapp.presentation.views.adapters.PhotosGridAdapter;
 import com.misotest.flickrgalleryapp.presentation.views.customviews.CircleView;
 import com.misotest.flickrgalleryapp.presentation.views.customviews.CustomRecyclerView;
 
 import java.util.List;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 import timber.log.Timber;
 
 /**
@@ -44,11 +44,11 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
 
     public static final String TAG = PhotoGridFragment.class.getSimpleName();
 
-    @InjectView(R.id.my_recycler_view)
+    @Bind(R.id.my_recycler_view)
     CustomRecyclerView mRecyclerView;
-    @InjectView(R.id.progress_bar)
+    @Bind(R.id.progress_bar)
     ProgressBar mProgressBar;
-    @InjectView(R.id.long_press_container)
+    @Bind(R.id.long_press_container)
     RelativeLayout mRelativeLayout;
 
     private PhotosGridAdapter mItemListAdapter;
@@ -72,7 +72,7 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
-        ButterKnife.inject(this, view);
+        ButterKnife.bind(this, view);
         return view;
     }
 
@@ -105,18 +105,27 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
 //    }
 
     /**
-     * Checks if view is in bounds and returns true if it is false otherwise
-     *
-     * @param view
-     * @param x
-     * @param y
-     * @return
+     * Initializes the presenter
      */
-    private boolean inViewInBounds(View view, int x, int y) {
-        view.getDrawingRect(outRect);
-        view.getLocationOnScreen(location);
-        outRect.offset(location[0], location[1]);
-        return outRect.contains(x, y);
+    private void startPresenter() {
+        PhotosDbStore photosDbStore = new PhotosDbStore(getActivity().getApplicationContext());
+        PhotoDataRepository photoDataRepository = PhotoDataRepository.getInstance(photosDbStore);
+        IGetPhotosUseCase iGetPhotosUseCase = new GetPhotosUseCaseImpl(photoDataRepository);
+        mPhotoListPresenter = new PhotosListPresenter(this, iGetPhotosUseCase);
+        mPhotoListPresenter.setQuery("akita");
+        mPhotoListPresenter.startPresenting();
+        isPaging = false;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
+    @Override
+    public Context getContext() {
+        return getActivity().getApplicationContext();
     }
 
     /**
@@ -166,32 +175,14 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     }
 
     /**
-     * Initializes the presenter
-     */
-    private void startPresenter() {
-        PhotosDbStore photosDbStore = new PhotosDbStore(getActivity().getApplicationContext());
-        PhotoDataRepository photoDataRepository = PhotoDataRepository.getInstance(photosDbStore);
-        IGetPhotosUseCase iGetPhotosUseCase = new GetPhotosUseCaseImpl(photoDataRepository);
-        mPhotoListPresenter = new PhotosListPresenter(this, iGetPhotosUseCase);
-        mPhotoListPresenter.setQuery("akita");
-        mPhotoListPresenter.startPresenting();
-        isPaging = false;
-    }
-
-    /**
-     * Opens a details fragment on photo click
+     * Get position of object in the adapter list
      *
-     * @param position
+     * @param motionEvent
+     * @return
      */
-    private void onPhotoClick(int position) {
-        FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
-                PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ButterKnife.reset(this);
+    private int getPositionTouched(MotionEvent motionEvent) {
+        View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+        return mRecyclerView.getChildAdapterPosition(v);
     }
 
     @Override
@@ -242,11 +233,6 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     }
 
     @Override
-    public Context getContext() {
-        return getActivity().getApplicationContext();
-    }
-
-    @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (gestureDetector.onTouchEvent(motionEvent)) {
             // single click
@@ -291,14 +277,28 @@ public class PhotoGridFragment extends Fragment implements PhotoGridView, View.O
     }
 
     /**
-     * Get position of object in the adapter list
+     * Opens a details fragment on photo click
      *
-     * @param motionEvent
+     * @param position
+     */
+    private void onPhotoClick(int position) {
+        FragmentHelper.prepareAndShowFragment(getActivity(), R.id.fragment_container,
+                PhotoPagerFragment.newInstance(position), true, PhotoPagerFragment.TAG);
+    }
+
+    /**
+     * Checks if view is in bounds and returns true if it is false otherwise
+     *
+     * @param view
+     * @param x
+     * @param y
      * @return
      */
-    private int getPositionTouched(MotionEvent motionEvent) {
-        View v = mRecyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-        return mRecyclerView.getChildAdapterPosition(v);
+    private boolean inViewInBounds(View view, int x, int y) {
+        view.getDrawingRect(outRect);
+        view.getLocationOnScreen(location);
+        outRect.offset(location[0], location[1]);
+        return outRect.contains(x, y);
     }
 
     /**
