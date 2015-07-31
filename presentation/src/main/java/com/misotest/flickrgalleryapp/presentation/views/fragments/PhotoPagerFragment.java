@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.misotest.flickrgalleryapp.R;
-import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepository;
+import com.misotest.flickrgalleryapp.data.repository.PhotoDataRepositoryOld;
 import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDbStore;
 import com.misotest.flickrgalleryapp.domain.interactor.GetPhotosUseCaseImpl;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
@@ -74,7 +74,7 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
     //todo release resources when paused
 //    @Override
 //    public void onPause() {
-//        mPhotoListPresenter.stop();
+//        mPhotoListPresenter.destroy();
 //        super.onPause();
 //    }
 
@@ -85,11 +85,11 @@ public class PhotoPagerFragment extends Fragment implements View.OnClickListener
         mPager.setAdapter(mPhotosSlideAdapter);
         mPager.setPageTransformer(false, new DepthPageTransformer());
         PhotosDbStore photosDbStore = new PhotosDbStore(getActivity().getApplicationContext());
-        PhotoDataRepository photoDataRepository = PhotoDataRepository.getInstance(photosDbStore);
-        IGetPhotosUseCase iGetPhotosUseCase = new GetPhotosUseCaseImpl(photoDataRepository);
+        PhotoDataRepositoryOld photoDataRepositoryOld = PhotoDataRepositoryOld.getInstance(photosDbStore);
+        IGetPhotosUseCase iGetPhotosUseCase = new GetPhotosUseCaseImpl(photoDataRepositoryOld);
         mPhotoListPresenter = new PhotosListPresenter(this, iGetPhotosUseCase);
         mPhotoListPresenter.setQuery("akita");
-        mPhotoListPresenter.startPresenting();
+        mPhotoListPresenter.resume();
     }
 
     @Override

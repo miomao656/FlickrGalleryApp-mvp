@@ -4,16 +4,23 @@ package com.misotest.flickrgalleryapp.presentation.mvp.presenters;
  * Interface that represents a Presenter in the model view presenter Pattern
  * defines methods to manage the Activity / Fragment lifecycle
  */
-public abstract class Presenter {
+public interface Presenter {
 
     /**
-     * Called when the presenter is initialized
+     * Method that control the lifecycle of the view. It should be called in the view's
+     * (Activity or Fragment) onResume() method.
      */
-    public abstract void startPresenting();
+    void resume();
 
     /**
-     * Called when the presenter is unregister, i.e when an activity
-     * or a fragment finishes
+     * Method that control the lifecycle of the view. It should be called in the view's
+     * (Activity or Fragment) onPause() method.
      */
-    public abstract void stop();
+    void pause();
+
+    /**
+     * Method that control the lifecycle of the view. It should be called in the view's
+     * (Activity or Fragment) onDestroy() method.
+     */
+    void destroy();
 }

@@ -56,12 +56,12 @@ public class PhotosSlideAdapter extends PagerAdapter {
 
         TextView title = (TextView) itemView.findViewById(R.id.photo_title);
 
-        final View view1 = (View) itemView.findViewById(R.id.one);
-        final View view2 = (View) itemView.findViewById(R.id.two);
-        final View view3 = (View) itemView.findViewById(R.id.three);
-        final View view4 = (View) itemView.findViewById(R.id.four);
-        final View view5 = (View) itemView.findViewById(R.id.five);
-        final View view6 = (View) itemView.findViewById(R.id.six);
+        final View view1 = itemView.findViewById(R.id.one);
+        final View view2 = itemView.findViewById(R.id.two);
+        final View view3 = itemView.findViewById(R.id.three);
+        final View view4 = itemView.findViewById(R.id.four);
+        final View view5 = itemView.findViewById(R.id.five);
+        final View view6 = itemView.findViewById(R.id.six);
 
         final PhotoPresentationModel presentationModel = presentationModelList.get(position);
 
@@ -116,37 +116,34 @@ public class PhotosSlideAdapter extends PagerAdapter {
                                final View view3, final View view4, final View view5, final View view6) {
         Bitmap bitmap = ((BitmapDrawable) photoView.getDrawable()).getBitmap();
 
-        Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                if (palette != null) {
-                    //get colors or default color if palete getter null
-                    int vibrant = palette.getVibrantColor(0x000000);
-                    int vibrantLight = palette.getLightVibrantColor(0x000000);
-                    int vibrantDark = palette.getDarkVibrantColor(0x000000);
-                    int muted = palette.getMutedColor(0x000000);
-                    int mutedLight = palette.getLightMutedColor(0x000000);
-                    int mutedDark = palette.getDarkMutedColor(0x000000);
-                    //set colors to views
-                    view1.setBackgroundColor(vibrant);
-                    view2.setBackgroundColor(vibrantLight);
-                    view3.setBackgroundColor(vibrantDark);
-                    view4.setBackgroundColor(muted);
-                    view5.setBackgroundColor(mutedLight);
-                    view6.setBackgroundColor(mutedDark);
-                }
+        Palette.generateAsync(bitmap, palette -> {
+            if (palette != null) {
+                //get colors or default color if palete getter null
+                int vibrant = palette.getVibrantColor(0x000000);
+                int vibrantLight = palette.getLightVibrantColor(0x000000);
+                int vibrantDark = palette.getDarkVibrantColor(0x000000);
+                int muted = palette.getMutedColor(0x000000);
+                int mutedLight = palette.getLightMutedColor(0x000000);
+                int mutedDark = palette.getDarkMutedColor(0x000000);
+                //set colors to views
+                view1.setBackgroundColor(vibrant);
+                view2.setBackgroundColor(vibrantLight);
+                view3.setBackgroundColor(vibrantDark);
+                view4.setBackgroundColor(muted);
+                view5.setBackgroundColor(mutedLight);
+                view6.setBackgroundColor(mutedDark);
             }
         });
-    }
-
-    @Override
-    public boolean isViewFromObject(View view, Object object) {
-        return view == ((RelativeLayout) object);
     }
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         // Remove viewpager_item.xml from ViewPager
         container.removeView((RelativeLayout) object);
+    }
+
+    @Override
+    public boolean isViewFromObject(View view, Object object) {
+        return view == object;
     }
 }

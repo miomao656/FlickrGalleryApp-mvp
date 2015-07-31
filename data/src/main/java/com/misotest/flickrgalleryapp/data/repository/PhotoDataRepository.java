@@ -1,95 +1,41 @@
 package com.misotest.flickrgalleryapp.data.repository;
 
-import com.misotest.flickrgalleryapp.data.entity.PhotoDataEntity;
-import com.misotest.flickrgalleryapp.data.entity.mapper.PhotoDomainModelMapper;
-import com.misotest.flickrgalleryapp.data.repository.datasource.IPhotoDataStore;
-import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDbStore;
-import com.misotest.flickrgalleryapp.domain.repository.IPhotosRepository;
+import com.misotest.flickrgalleryapp.data.entity.mapper.PhotoEntityDataMapper;
+import com.misotest.flickrgalleryapp.data.repository.datasource.PhotoDataStore;
+import com.misotest.flickrgalleryapp.data.repository.datasource.PhotosDataStoreFactory;
+import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
+import com.misotest.flickrgalleryapp.domain.repository.PhotoRepository;
 
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import rx.Observable;
+
 /**
- * Interface that represents a Repository for getting {@link PhotoDataEntity} related data.
+ * Created by miomao on 7/26/15.
  */
-public class PhotoDataRepository implements IPhotosRepository {
+@Singleton
+public class PhotoDataRepository implements PhotoRepository {
 
-    private static PhotoDataRepository INSTANCE;
-    private PhotosDbStore photosDbStore;
-    private PhotoListCallback photoListCallback;
+    private final PhotoEntityDataMapper photoEntityDataMapper;
+    private final PhotosDataStoreFactory photosDataStoreFactory;
 
-    /**
-     * Constructs a {@link PhotoDataRepository}.
-     *
-     * @param photosDbStore A factory to construct different data source implementations.
-     */
-    protected PhotoDataRepository(PhotosDbStore photosDbStore) {
-        if (photosDbStore == null) {
-            throw new IllegalArgumentException("Invalid null parameters in constructor!!!");
-        }
-        this.photosDbStore = photosDbStore;
-    }
-
-    public static synchronized PhotoDataRepository getInstance(PhotosDbStore dataStoreFactory) {
-        if (INSTANCE == null) {
-            INSTANCE = new PhotoDataRepository(dataStoreFactory);
-        }
-        return INSTANCE;
-    }
-
-    private IPhotoDataStore.PhotoDBRepoCallback dbListCallback = new IPhotoDataStore.PhotoDBRepoCallback() {
-
-        @Override
-        public void onPhotoDbDataSaved(final List<PhotoDataEntity> photoDataEntities) {
-            if (photoDataEntities != null) {
-                photoListCallback.onPhotoListLoaded(new PhotoDomainModelMapper().transform(photoDataEntities));
-            }
-        }
-
-        @Override
-        public void onPhotoListRetrieved(List<PhotoDataEntity> photoDataEntities) {
-            if (photoDataEntities != null) {
-                photoListCallback.onPhotoListLoaded(new PhotoDomainModelMapper().transform(photoDataEntities));
-            }
-        }
-
-        @Override
-        public void onPhotoDeleted(String photoID) {
-            photoListCallback.onPhotoDeleted(photoID);
-        }
-
-        @Override
-        public void onError(Throwable exception) {
-            photoListCallback.onError(exception);
-        }
-
-        @Override
-        public void onPhotoUpdated(PhotoDataEntity photoDataEntity) {
-            photoListCallback.onPhotoUpdated(new PhotoDomainModelMapper().transform(photoDataEntity));
-        }
-    };
-
-    @Override
-    public void deletePhotoFromDevice(String photoId, final PhotoListCallback photoListCallback) {
-        if (photoListCallback == null) {
-            throw new IllegalArgumentException("Callback cannot be null!!!");
-        }
-        this.photoListCallback = photoListCallback;
-        if (photoId != null && !photoId.isEmpty()) {
-            photosDbStore.deletePhotoFromDb(photoId, dbListCallback);
-        }
+    @Inject
+    public PhotoDataRepository(PhotosDataStoreFactory photosDataStoreFactory, PhotoEntityDataMapper photoEntityDataMapper) {
+        this.photosDataStoreFactory = photosDataStoreFactory;
+        this.photoEntityDataMapper = photoEntityDataMapper;
     }
 
     @Override
-    public void getPhotoList(int page, String query, boolean isOnline, final PhotoListCallback photoListCallback) {
-        //we always get all users from the cloud
-        if (photoListCallback == null) {
-            throw new IllegalArgumentException("Callback cannot be null!!!");
-        }
-        this.photoListCallback = photoListCallback;
-        photosDbStore.getPhotosToPresent(page, query, dbListCallback);
+    public Observable<List<PhotoDomainEntity>> photos() {
+        final PhotoDataStore photoDataStore = photosDataStoreFactory.create();
+        return photoDataStore.photos().map(photoEntityDataMapper::transform);
     }
 
-    public void dispose() {
-        photosDbStore.dispose();
+    @Override
+    public Observable<PhotoDomainEntity> photo(int userId) {
+        throw new UnsupportedOperationException("Operation is not available!!!");
     }
 }

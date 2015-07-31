@@ -174,12 +174,7 @@ public class PhotosGridAdapter extends RecyclerView.Adapter<PhotosGridAdapter.Vi
         // notify of the removal with a delay so there is a brief pause after returning
         // from the book details screen; this makes the animation more noticeable
         Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                notifyItemRemoved(position);
-            }
-        }, NOTIFY_DELAY);
+        handler.postDelayed(() -> notifyItemRemoved(position), NOTIFY_DELAY);
     }
 
     /**

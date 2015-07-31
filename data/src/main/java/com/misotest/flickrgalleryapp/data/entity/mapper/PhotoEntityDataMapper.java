@@ -7,31 +7,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Convert from data to domain model
  */
-public class PhotoDomainModelMapper {
+@Singleton
+public class PhotoEntityDataMapper {
 
-    public PhotoDomainModelMapper() {
-    }
-
-    /**
-     * Transform a {@link PhotoDataEntity} into an {@link PhotoDomainEntity}.
-     *
-     * @param photoDataEntity Object to be transformed.
-     * @return {@link PhotoDomainEntity}.
-     */
-    public PhotoDomainEntity transform(PhotoDataEntity photoDataEntity) {
-        if (photoDataEntity == null) {
-            throw new IllegalArgumentException("Cannot transform a null value");
-        }
-        PhotoDomainEntity photoPresentationModel = new PhotoDomainEntity();
-        photoPresentationModel.photo_id = photoDataEntity.photo_id;
-        photoPresentationModel.photo_title = photoDataEntity.photo_title;
-        photoPresentationModel.photo_url = photoDataEntity.photo_url;
-        photoPresentationModel.photo_file_path = photoDataEntity.photo_file_path;
-
-        return photoPresentationModel;
+    @Inject
+    public PhotoEntityDataMapper() {
     }
 
     /**
@@ -52,5 +38,24 @@ public class PhotoDomainModelMapper {
             userModelsCollection = Collections.emptyList();
         }
         return userModelsCollection;
+    }
+
+    /**
+     * Transform a {@link PhotoDataEntity} into an {@link PhotoDomainEntity}.
+     *
+     * @param photoDataEntity Object to be transformed.
+     * @return {@link PhotoDomainEntity}.
+     */
+    public PhotoDomainEntity transform(PhotoDataEntity photoDataEntity) {
+        if (photoDataEntity == null) {
+            throw new IllegalArgumentException("Cannot transform a null value");
+        }
+        PhotoDomainEntity photoPresentationModel = new PhotoDomainEntity();
+        photoPresentationModel.photo_id = photoDataEntity.photo_id;
+        photoPresentationModel.photo_title = photoDataEntity.photo_title;
+        photoPresentationModel.photo_url = photoDataEntity.photo_url;
+        photoPresentationModel.photo_file_path = photoDataEntity.photo_file_path;
+
+        return photoPresentationModel;
     }
 }

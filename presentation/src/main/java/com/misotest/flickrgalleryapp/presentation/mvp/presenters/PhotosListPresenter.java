@@ -2,11 +2,12 @@ package com.misotest.flickrgalleryapp.presentation.mvp.presenters;
 
 
 import com.misotest.flickrgalleryapp.domain.entity.PhotoDomainEntity;
+import com.misotest.flickrgalleryapp.domain.interactor.DefaultSubscriber;
 import com.misotest.flickrgalleryapp.domain.interactor.IGetPhotosUseCase;
 import com.misotest.flickrgalleryapp.presentation.entity.PhotoPresentationModel;
 import com.misotest.flickrgalleryapp.presentation.entity.mapper.PhotoPresentationModelMapper;
-import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 import com.misotest.flickrgalleryapp.presentation.mvp.viewinterfaces.PhotoGridView;
+import com.misotest.flickrgalleryapp.presentation.utils.CommonUtils;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  * {@link Presenter} that controls communication between views and models of the presentation
  * layer.
  */
-public class PhotosListPresenter extends Presenter {
+public class PhotosListPresenter extends DefaultSubscriber<List<PhotoDomainEntity>> implements Presenter {
 
     private PhotoGridView photoGridView;
     private IGetPhotosUseCase getPhotosUseCase;
@@ -65,20 +66,19 @@ public class PhotosListPresenter extends Presenter {
     }
 
     @Override
-    public void startPresenting() {
+    public void resume() {
         photoGridView.showLoading();
         getPage(0, query);
     }
 
     @Override
-    public void stop() {
-        getPhotosUseCase.dispose();
+    public void pause() {
+
     }
 
-    private void showPhotoListInView(List<PhotoDomainEntity> usersCollection) {
-        final List<PhotoPresentationModel> userModelsCollection =
-                this.mapper.transform(usersCollection);
-        photoGridView.presentPhotos(userModelsCollection);
+    @Override
+    public void destroy() {
+        getPhotosUseCase.dispose();
     }
 
     /**
@@ -90,6 +90,12 @@ public class PhotosListPresenter extends Presenter {
     public void getPage(int page, String query) {
         getPhotosUseCase.requestPhotos(page, query,
                 CommonUtils.isNetworkAvailable(photoGridView.getContext()), useCaseUseCaseCallback);
+    }
+
+    private void showPhotoListInView(List<PhotoDomainEntity> usersCollection) {
+        final List<PhotoPresentationModel> userModelsCollection =
+                this.mapper.transform(usersCollection);
+        photoGridView.presentPhotos(userModelsCollection);
     }
 
     /**

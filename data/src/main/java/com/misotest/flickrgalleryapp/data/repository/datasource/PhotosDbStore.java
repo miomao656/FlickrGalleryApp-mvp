@@ -19,9 +19,6 @@ import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -32,23 +29,10 @@ public class PhotosDbStore implements IPhotoDataStore {
     private Context mContext;
     private CompositeSubscription subscription = new CompositeSubscription();
     private PhotoDBRepoCallback repositoryDbListCallback;
-
-    /**
-     * Constructor for adding context dependency to this module
-     *
-     * @param context
-     */
-    public PhotosDbStore(Context context) {
-        if (mContext == null) {
-            this.mContext = context;
-        }
-    }
-
     /**
      * Used to call rest service and download image to device
      */
     private PhotoCloudStore cloudStore = new PhotoCloudStore();
-
     /**
      * Callback to download images and update database
      */
@@ -65,31 +49,11 @@ public class PhotosDbStore implements IPhotoDataStore {
         @Override
         public void onPhotosDownloaded(List<PhotoDataEntity> photoDataEntities) {
             Observable.from(photoDataEntities)
-                    .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
-                        @Override
-                        public Observable<PhotoDataEntity> call(PhotoDataEntity photoDataEntity) {
-                            return Observable.just(photoDataEntity);
-                        }
-                    })
+                    .flatMap(Observable::just)
                     .subscribe(
-                            new Action1<PhotoDataEntity>() {
-                                @Override
-                                public void call(PhotoDataEntity photoDataEntity) {
-                                    updatePhotoInDb(photoDataEntity);
-                                }
-                            },
-                            new Action1<Throwable>() {
-                                @Override
-                                public void call(Throwable throwable) {
-                                    throwable.printStackTrace();
-                                }
-                            },
-                            new Action0() {
-                                @Override
-                                public void call() {
-                                    repositoryDbListCallback.onPhotoDbDataSaved(getPhotoListFromDb());
-                                }
-                            }
+                            PhotosDbStore.this::updatePhotoInDb,
+                            Throwable::printStackTrace,
+                            () -> repositoryDbListCallback.onPhotoDbDataSaved(getPhotoListFromDb())
                     );
         }
 
@@ -105,109 +69,31 @@ public class PhotosDbStore implements IPhotoDataStore {
     };
 
     /**
-     * Get a list of PhotoDataEntity from database
+     * Constructor for adding context dependency to this module
      *
-     * @return
+     * @param context
      */
-    private List<PhotoDataEntity> getPhotoListFromDb() {
-        List<PhotoDataEntity> urls = null;
-        ContentResolver resolver = mContext.getContentResolver();
-        String[] projection = PhotosContentProvider.PROJECTION;
-        Cursor cursor =
-                resolver.query(PhotosContentProvider.CONTENT_URI,
-                        projection,
-                        null,
-                        null,
-                        null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                urls = new ArrayList<PhotoDataEntity>(cursor.getCount());
-                do {
-                    urls.add(new PhotoDataEntity(cursor.getString(0),
-                            cursor.getString(1),
-                            cursor.getString(2),
-                            cursor.getString(3)
-                    ));
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
+    public PhotosDbStore(Context context) {
+        if (mContext == null) {
+            this.mContext = context;
         }
-        return urls;
     }
 
     /**
-     * Save retrieved data from rest to database
+     * Update photo row entity in database
      *
-     * @param dataEntityList
+     * @param photoDataEntity
      */
-    public void saveDataToDb(final List<PhotoDataEntity> dataEntityList) {
-        subscription.add(Observable.from(dataEntityList)
-                        .flatMap(new Func1<PhotoDataEntity, Observable<PhotoDataEntity>>() {
-                            @Override
-                            public Observable<PhotoDataEntity> call(PhotoDataEntity photoDomainEntity) {
-                                return Observable.just(photoDomainEntity);
-                            }
-                        })
-                        .map(new Func1<PhotoDataEntity, ContentValues>() {
-                            @Override
-                            public ContentValues call(PhotoDataEntity uri) {
-                                ContentValues values = new ContentValues();
-                                values.put(PhotoFilesTable.KEY_PHOTO_ID, uri.photo_id);
-                                values.put(PhotoFilesTable.KEY_PHOTO_TITLE, uri.photo_title);
-                                values.put(PhotoFilesTable.KEY_PHOTO_URL, uri.photo_url);
-                                values.put(PhotoFilesTable.KEY_PHOTO_PATH, uri.photo_file_path);
-                                return values;
-                            }
-                        })
-                        .toList()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                new Action1<List<ContentValues>>() {
-                                    @Override
-                                    public void call(List<ContentValues> contentValues) {
-                                        mContext.getContentResolver()
-                                                .bulkInsert(PhotosContentProvider.CONTENT_URI,
-                                                        contentValues.toArray(new ContentValues[contentValues.size()])
-                                                );
-                                    }
-                                },
-                                new Action1<Throwable>() {
-                                    @Override
-                                    public void call(Throwable throwable) {
-                                        throwable.printStackTrace();
-                                        repositoryDbListCallback.onError(throwable);
-                                    }
-                                },
-                                new Action0() {
-                                    @Override
-                                    public void call() {
-                                        //todo filter if no change and don't send to presenter
-//                                        repositoryDbListCallback.onPhotoDbDataSaved(dataEntityList);
-                                        cloudStore.downloadPhotos(filterForDownload(), listCallback);
-                                    }
-                                }
-                        )
-        );
-    }
-
-    /**
-     * Check database and return list with photos that have not been downloaded
-     *
-     * @return
-     */
-    private List<PhotoDataEntity> filterForDownload() {
-        List<PhotoDataEntity> existing = getPhotoListFromDb();
-        List<PhotoDataEntity> toDownload = new ArrayList<>();
-        if (existing != null) {
-            for (PhotoDataEntity entity : existing) {
-                if (entity.photo_file_path.isEmpty()) {
-                    toDownload.add(entity);
-                }
+    public void updatePhotoInDb(PhotoDataEntity photoDataEntity) {
+        if (getPhotoDataEntity(photoDataEntity.photo_id) != null) {
+            try {
+                saveOrUpdatePhoto(photoDataEntity);
+            } catch (Exception e) {
+                repositoryDbListCallback.onError(e.fillInStackTrace());
+            } finally {
+                repositoryDbListCallback.onPhotoUpdated(photoDataEntity);
             }
-            existing.clear();
-            existing = null;
         }
-        return toDownload;
     }
 
     /**
@@ -266,45 +152,6 @@ public class PhotosDbStore implements IPhotoDataStore {
     }
 
     /**
-     * Deletes a row in photos table and file from the device if it exists
-     *
-     * @param photoID
-     */
-    private void deletePhotoFromDb(String photoID) {
-        PhotoDataEntity entity = getPhotoDataEntity(photoID);
-        if (entity != null) {
-            if (FileUtils.isExistingFile(entity.photo_file_path)) {
-                FileUtils.deleteFile(new File(entity.photo_file_path));
-            }
-            mContext.getContentResolver()
-                    .delete(PhotosContentProvider.CONTENT_URI,
-                            PhotoFilesTable.KEY_PHOTO_ID + " = " + photoID,
-                            null
-                    );
-        } else {
-            repositoryDbListCallback.onError(new Exception("nothing to delete!"));
-        }
-        repositoryDbListCallback.onPhotoDeleted(photoID);
-    }
-
-    /**
-     * Update photo row entity in database
-     *
-     * @param photoDataEntity
-     */
-    public void updatePhotoInDb(PhotoDataEntity photoDataEntity) {
-        if (getPhotoDataEntity(photoDataEntity.photo_id) != null) {
-            try {
-                saveOrUpdatePhoto(photoDataEntity);
-            } catch (Exception e) {
-                repositoryDbListCallback.onError(e.fillInStackTrace());
-            } finally {
-                repositoryDbListCallback.onPhotoUpdated(photoDataEntity);
-            }
-        }
-    }
-
-    /**
      * On app start retrieve data to present if any in db
      *
      * @param repositoryDbListCallback
@@ -332,6 +179,92 @@ public class PhotosDbStore implements IPhotoDataStore {
         saveDataToDb(dataEntityList);
     }
 
+    /**
+     * Save retrieved data from rest to database
+     *
+     * @param dataEntityList
+     */
+    public void saveDataToDb(final List<PhotoDataEntity> dataEntityList) {
+        subscription.add(Observable.from(dataEntityList)
+                        .flatMap(Observable::just)
+                        .map(uri -> {
+                            ContentValues values = new ContentValues();
+                            values.put(PhotoFilesTable.KEY_PHOTO_ID, uri.photo_id);
+                            values.put(PhotoFilesTable.KEY_PHOTO_TITLE, uri.photo_title);
+                            values.put(PhotoFilesTable.KEY_PHOTO_URL, uri.photo_url);
+                            values.put(PhotoFilesTable.KEY_PHOTO_PATH, uri.photo_file_path);
+                            return values;
+                        })
+                        .toList()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                contentValues -> mContext.getContentResolver()
+                                        .bulkInsert(PhotosContentProvider.CONTENT_URI,
+                                                contentValues.toArray(new ContentValues[contentValues.size()])
+                                        ),
+                                throwable -> {
+                                    throwable.printStackTrace();
+                                    repositoryDbListCallback.onError(throwable);
+                                },
+                                () -> {
+                                    //todo filter if no change and don't send to presenter
+//                                        repositoryDbListCallback.onPhotoDbDataSaved(dataEntityList);
+                                    cloudStore.downloadPhotos(filterForDownload(), listCallback);
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Check database and return list with photos that have not been downloaded
+     *
+     * @return
+     */
+    private List<PhotoDataEntity> filterForDownload() {
+        List<PhotoDataEntity> existing = getPhotoListFromDb();
+        List<PhotoDataEntity> toDownload = new ArrayList<>();
+        if (existing != null) {
+            for (PhotoDataEntity entity : existing) {
+                if (entity.photo_file_path.isEmpty()) {
+                    toDownload.add(entity);
+                }
+            }
+            existing.clear();
+        }
+        return toDownload;
+    }
+
+    /**
+     * Get a list of PhotoDataEntity from database
+     *
+     * @return
+     */
+    private List<PhotoDataEntity> getPhotoListFromDb() {
+        List<PhotoDataEntity> urls = null;
+        ContentResolver resolver = mContext.getContentResolver();
+        String[] projection = PhotosContentProvider.PROJECTION;
+        Cursor cursor =
+                resolver.query(PhotosContentProvider.CONTENT_URI,
+                        projection,
+                        null,
+                        null,
+                        null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                urls = new ArrayList<>(cursor.getCount());
+                do {
+                    urls.add(new PhotoDataEntity(cursor.getString(0),
+                            cursor.getString(1),
+                            cursor.getString(2),
+                            cursor.getString(3)
+                    ));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        return urls;
+    }
+
     @Override
     public void deletePhotoFromDb(String photoId, PhotoDBRepoCallback repositoryDbListCallback) {
         if (repositoryDbListCallback == null) {
@@ -339,6 +272,28 @@ public class PhotosDbStore implements IPhotoDataStore {
         }
         this.repositoryDbListCallback = repositoryDbListCallback;
         deletePhotoFromDb(photoId);
+    }
+
+    /**
+     * Deletes a row in photos table and file from the device if it exists
+     *
+     * @param photoID
+     */
+    private void deletePhotoFromDb(String photoID) {
+        PhotoDataEntity entity = getPhotoDataEntity(photoID);
+        if (entity != null) {
+            if (FileUtils.isExistingFile(entity.photo_file_path)) {
+                FileUtils.deleteFile(new File(entity.photo_file_path));
+            }
+            mContext.getContentResolver()
+                    .delete(PhotosContentProvider.CONTENT_URI,
+                            PhotoFilesTable.KEY_PHOTO_ID + " = " + photoID,
+                            null
+                    );
+        } else {
+            repositoryDbListCallback.onError(new Exception("nothing to delete!"));
+        }
+        repositoryDbListCallback.onPhotoDeleted(photoID);
     }
 
     @Override
